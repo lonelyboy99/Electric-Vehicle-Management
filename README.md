@@ -1,11 +1,6 @@
 <p style="display:flex; justify-content: center">
 
 </p>
-<p align="center">
-  <a href="https://tdesign.tencent.com/starter/vue/#/dashboard/base" target="_blank">
-    <img alt="TDesign Logo" width="200" src="https://tdesign.gtimg.com/starter/brand-logo.svg">
-  </a>
-</p>
 
 <p align="center">
   <a href="https://nodejs.org/en/about/releases/"><img src="https://img.shields.io/node/v/vite.svg" alt="node compatility"></a>
