@@ -15,6 +15,12 @@ export default [
         component: () => import('@/pages/list/base/index.vue'),
         meta: { title: '灯具信息' },
       },
+      {
+        path: 'tree',
+        name: 'ListTree',
+        component: () => import('@/pages/list/tree/index.vue'),
+        meta: { title: '操作配置' },
+      },
     ],
   },
   {

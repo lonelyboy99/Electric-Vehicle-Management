@@ -209,13 +209,11 @@ export class MqttConnection {
     this.powerData = [];
     // 调用initMqtt方法
     this.initMqtt();
-    this.updateChartData();
     setInterval(() => {
-      this.updateChartData();
-      PANE_LIST_DATA[0].number = this.getLatestValueByTopic('temp_hum/emqx', 'temp');
-      PANE_LIST_DATA[1].number = this.getLatestValueByTopic('temp_hum/emqx', 'hum');
-      PANE_LIST_DATA[2].number = this.getLatestValueByTopic('temp_hum/emqx', 'light');
-      PANE_LIST_DATA[3].number = this.getLatestValueByTopic('temp_hum/emqx', 'power');
+      PANE_LIST_DATA[0].number = this.getLatestValueByTopic('online/emqx', 'temp');
+      PANE_LIST_DATA[1].number = this.getLatestValueByTopic('online/emqx', 'hum');
+      PANE_LIST_DATA[2].number = this.getLatestValueByTopic('online/emqx', 'light');
+      PANE_LIST_DATA[3].number = this.getLatestValueByTopic('online/emqx', 'power');
     }, 1000);
   }
 
@@ -238,27 +236,18 @@ export class MqttConnection {
 
       // 连接成功后订阅消息
       this.subscribes();
-
-      // 更新number属性的值为实际的连接状态
-      this.updateNumber();
     });
 
     // 重连提醒
     this.client.on('reconnect', () => {
       this.mqttConnectionStatus = '正在重连';
       console.log('正在重连');
-
-      // 更新number属性的值为实际的连接状态
-      this.updateNumber();
     });
 
     // 连接失败提醒
     this.client.on('error', (error) => {
       this.mqttConnectionStatus = '连接失败';
       console.log('连接失败', error);
-
-      // 更新number属性的值为实际的连接状态
-      this.updateNumber();
     });
   }
 
@@ -266,7 +255,7 @@ export class MqttConnection {
    * MQTT订阅函数(订阅多个信息)
    */
   subscribes() {
-    const arr = ['temp_hum/emqx', 'led/emqx', 'online/emqx']
+    const arr = ['online/emqx']
     this.client.subscribe(arr, {qos: 1}, (err) => {
       if (!err) {
         console.log(`主题为：“${arr}” 的消息订阅成功`)
@@ -294,37 +283,6 @@ export class MqttConnection {
       return 'N/A' // 如果没有匹配到消息，返回 "N/A"
     }
   }
-
-  /**
-   * 更新数据数组
-   */
-  updateChartData() {
-    const temperature = this.getLatestValueByTopic('temp_hum/emqx', 'temp');
-    const humidity = this.getLatestValueByTopic('temp_hum/emqx', 'hum');
-    const light = this.getLatestValueByTopic('temp_hum/emqx', 'light');
-    const power = this.getLatestValueByTopic('temp_hum/emqx', 'power');
-    // 判断是否要添加数据
-    if (temperature !== 'N/A' && humidity !== 'N/A' && light !== 'N/A' && power !== 'N/A') {
-      const currentTime = new Date();
-      const currentTimeString = currentTime.toISOString();
-
-      // 删除旧数据
-      this.temperatureData = this.temperatureData.slice(-10);
-      this.humidityData = this.humidityData.slice(-10);
-      this.lightingData = this.lightingData.slice(-10);
-      this.powerData = this.powerData.slice(-10);
-
-      // 判断是否是新数据
-      if (!this.temperatureData.length || this.temperatureData[0].time !== currentTimeString) {
-        // 添加新数据
-        this.temperatureData.push({time: currentTimeString, value: temperature});
-        this.humidityData.push({time: currentTimeString, value: humidity});
-        this.lightingData.push({time: currentTimeString, value: light});
-        this.powerData.push({time: currentTimeString, value: power});
-      }
-    }
-  }
-
   /**
    * 数据处理
    */
@@ -335,14 +293,6 @@ export class MqttConnection {
       qos: packet.qos,
       time: new Date(),
     });
-  }
-
-  updateNumber() {
-    // 在连接状态改变时，将number属性的值更新为实际的连接状态
-    // 如果您的PANE_LIST数组中有多个DashboardPanel对象，您可能需要进一步确定要更新的对象
-    // 在这个例子中，我们简单地将第一个对象的number属性更新为当前连接状态
-    PANE_LIST[3].number = this.mqttConnectionStatus;
-
   }
 }
 

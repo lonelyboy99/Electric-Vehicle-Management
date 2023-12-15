@@ -3,14 +3,9 @@
     <t-card class="list-card-container" :bordered="false">
       <t-row justify="space-between">
         <div class="left-operation-container">
-          <t-button variant="base" :disabled="!selectedRowKeys.length"> 导出灯具信息</t-button>
+          <t-button variant="base" @click="handleNav('/list/tree')"> 操作配置</t-button>
           <p v-if="!!selectedRowKeys.length" class="selected-count">已选{{ selectedRowKeys.length }}项</p>
         </div>
-        <t-input v-model="searchValue" class="search-input" placeholder="请输入你需要搜索的内容" clearable>
-          <template #suffix-icon>
-            <search-icon size="20px"/>
-          </template>
-        </t-input>
       </t-row>
 
       <div class="table-container">
@@ -29,13 +24,6 @@
           :headerAffixedTop="true"
           :headerAffixProps="{ offsetTop: offsetTop, container: getContainer }"
         >
-          <template #op="slotProps">
-            <a class="t-button-link">查看</a>
-            <a class="t-button-link">操作配置</a>
-            <a class="t-button-link">编辑</a>
-            <a class="t-button-link">预设情景</a>
-            <a class="t-button-link" @click="handleClickDelete(slotProps)">删除</a>
-          </template>
         </t-table>
       </div>
     </t-card>
@@ -73,7 +61,7 @@ export default Vue.extend({
       dataLoading: false,
       data: [],
       receivedMessages: [],
-      selectedRowKeys: [1],
+      selectedRowKeys: [0],
       value: 'first',
       tableData: [],
       columns: [
@@ -81,65 +69,59 @@ export default Vue.extend({
         {
           title: 'UUID',
           align: 'left',
-          width: 60,
+          width: 'auto',
           ellipsis: true,
           colKey: 'UUID',
           fixed: 'left',
         },
         {
           title: '区',
-          width: 30,
+          width: 'auto',
           ellipsis: true,
           colKey: 'area',
         },
         {
           title: '组',
-          width: 30,
+          width: 'auto',
           ellipsis: true,
           colKey: 'group',
         },
         {
           title: '号',
-          width: 30,
+          width: 'auto',
           ellipsis: true,
           colKey: 'mark',
         },
         {
           title: '网关',
-          width: 80,
+          width: 'auto',
           ellipsis: true,
           colKey: 'gateway',
         },
         {
-          title: '当前亮度',
-          width: 40,
+          title: '区域位置',
+          width: 'auto',
           ellipsis: true,
           colKey: 'location',
         },
         {
-          title: '当前色温',
-          width: 40,
+          title: '账号',
+          width: 'auto',
           ellipsis: true,
           colKey: 'account',
         },
         {
-          title: '单灯功率',
-          width: 40,
+          title: '用户名',
+          width: 'auto',
           ellipsis: true,
           colKey: 'username',
         },
         {
-          title: '用户名',
-          width: 40,
+          title: '所属客户',
+          width: 'auto',
+          fixed: 'right',
           ellipsis: true,
           colKey: 'customer',
-        },
-        {
-          align: 'center',
-          fixed: 'right',
-          width: 100,
-          colKey: 'op',
-          title: '操作',
         },
       ],
       rowKey: 'index',
@@ -237,6 +219,9 @@ export default Vue.extend({
     },
     resetIdx() {
       this.deleteIdx = -1;
+    },
+    handleNav(url) {
+      this.$router.push(url);
     },
 
     /**
@@ -392,10 +377,10 @@ export default Vue.extend({
         group: firstPart,
         mark: secondPart,
         gateway: mqttData.params.value.device_name,
-        location: mqttData.params.value.current_bright,
-        account: mqttData.params.value.current_cct,
-        username: mqttData.params.value.power,
-        customer: "坤科节能",
+        // location: mqttData.params.value.current_bright,
+        // account: mqttData.params.value.current_cct,
+        // username: mqttData.params.value.power,
+        // customer: "坤科节能",
         // 其他字段根据需要添加
       };
       // 将数据添加到表格数据数组中
