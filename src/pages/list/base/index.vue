@@ -59,7 +59,6 @@ export default Vue.extend({
       CONTRACT_PAYMENT_TYPES,
       prefix,
       dataLoading: false,
-      data: [],
       receivedMessages: [],
       selectedRowKeys: [0],
       value: 'first',
@@ -126,13 +125,13 @@ export default Vue.extend({
       ],
       rowKey: 'index',
       tableLayout: 'auto',
-      verticalAlign: 'top',
+      verticalAlign: 'middle',
       hover: true,
       rowClassName: (rowKey: string) => `${rowKey}-class`,
       // 与pagination对齐
       pagination: {
         defaultPageSize: 20,
-        total: 0,
+        total: 100,
         defaultCurrent: 1,
       },
       searchValue: '',
@@ -143,7 +142,7 @@ export default Vue.extend({
   computed: {
     confirmBody() {
       if (this.deleteIdx > -1) {
-        const {UUID} = this.data?.[this.deleteIdx];
+        const {UUID} = this.tableData?.[this.deleteIdx];
         return `删除后，${UUID}的所有信息将被清空，且无法恢复`;
       }
       return '';
@@ -174,8 +173,9 @@ export default Vue.extend({
     //   });
     this.initMqtt();
     this.updateChartData();
-    this.chartUpdateInterval = setInterval(() => {
+    setInterval(() => {
       this.updateChartData();
+      this.pagination.total = this.tableData.length;
     }, 100);
   },
 
@@ -204,8 +204,8 @@ export default Vue.extend({
     },
     onConfirmDelete() {
       // 真实业务请发起请求
-      this.data.splice(this.deleteIdx, 1);
-      this.pagination.total = this.data.length;
+      this.tableData.splice(this.deleteIdx, 1);
+      this.pagination.total = this.tableData.length;
       const selectedIdx = this.selectedRowKeys.indexOf(this.deleteIdx);
       if (selectedIdx > -1) {
         this.selectedRowKeys.splice(selectedIdx, 1);

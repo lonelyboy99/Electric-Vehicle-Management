@@ -1,437 +1,174 @@
 <template>
-  <div>
-    <t-card class="list-card-container" :bordered="false">
-      <t-row justify="space-between">
-        <div class="left-operation-container">
-          <t-button variant="base" @click="handleNav('/list/tree')"> 操作配置</t-button>
-          <p v-if="!!selectedRowKeys.length" class="selected-count">已选{{ selectedRowKeys.length }}项</p>
+  <t-card :bordered="false">
+    <div class="table-tree-container">
+      <div class="list-tree-wrapper">
+        <div class="list-tree-operator">
+          <t-input v-model="filterText" @input="onInput" placeholder="请输入关键词">
+            <search-icon slot="suffix-icon" size="20px" />
+          </t-input>
+          <t-tree :data="items" hover expand-on-click-node :default-expanded="expanded" :filter="filterByText" />
         </div>
-      </t-row>
-
-      <div class="table-container">
-        <t-table
-          :columns="columns"
-          :data="tableData"
-          :rowKey="rowKey"
-          :verticalAlign="verticalAlign"
-          :hover="hover"
-          :pagination="pagination"
-          :selected-row-keys="selectedRowKeys"
-          :loading="dataLoading"
-          @page-change="rehandlePageChange"
-          @change="rehandleChange"
-          @select-change="rehandleSelectChange"
-          :headerAffixedTop="true"
-          :headerAffixProps="{ offsetTop: offsetTop, container: getContainer }"
-        >
-        </t-table>
+        <div class="list-tree-content">
+          <common-table />
+        </div>
       </div>
-    </t-card>
-    <t-dialog
-      header="确认删除当前所选灯具信息？"
-      :body="confirmBody"
-      :visible.sync="confirmVisible"
-      @confirm="onConfirmDelete"
-      :onCancel="onCancel"
-    >
-    </t-dialog>
-  </div>
+    </div>
+  </t-card>
 </template>
-<script lang="ts">
-import Vue from 'vue';
-import {SearchIcon} from 'tdesign-icons-vue';
-import Trend from '@/components/trend/index.vue';
-import {prefix} from '@/config/global';
-import mqtt from 'mqtt';
-import {CONTRACT_STATUS, CONTRACT_STATUS_OPTIONS, CONTRACT_TYPES, CONTRACT_PAYMENT_TYPES} from '@/constants';
+<script>
+import { SearchIcon } from 'tdesign-icons-vue';
+import CommonTable from '../components/CommonTable.vue';
 
-export default Vue.extend({
-  name: 'ListBase',
+export default {
+  name: 'ListTree',
   components: {
     SearchIcon,
-    Trend,
+    CommonTable,
   },
   data() {
     return {
-      CONTRACT_STATUS,
-      CONTRACT_STATUS_OPTIONS,
-      CONTRACT_TYPES,
-      CONTRACT_PAYMENT_TYPES,
-      prefix,
-      dataLoading: false,
-      receivedMessages: [],
-      selectedRowKeys: [0],
-      value: 'first',
-      tableData: [],
-      columns: [
-        {colKey: 'row-select', type: 'multiple', width: 20, fixed: 'left'},
+      data: [],
+      filterText: '',
+      filterByText: null,
+      options: [
         {
-          title: 'UUID',
-          align: 'left',
-          width: 'auto',
-          ellipsis: true,
-          colKey: 'UUID',
-          fixed: 'left',
+          label: '一级操作',
+          value: '1',
         },
         {
-          title: '区',
-          width: 'auto',
-          ellipsis: true,
-          colKey: 'area',
-        },
-        {
-          title: '组',
-          width: 'auto',
-          ellipsis: true,
-          colKey: 'group',
-        },
-        {
-          title: '号',
-          width: 'auto',
-          ellipsis: true,
-          colKey: 'mark',
-        },
-        {
-          title: '网关',
-          width: 'auto',
-          ellipsis: true,
-          colKey: 'gateway',
-        },
-        {
-          title: '区域位置',
-          width: 'auto',
-          ellipsis: true,
-          colKey: 'location',
-        },
-        {
-          title: '账号',
-          width: 'auto',
-          ellipsis: true,
-          colKey: 'account',
-        },
-        {
-          title: '用户名',
-          width: 'auto',
-          ellipsis: true,
-          colKey: 'username',
-        },
-        {
-          title: '所属客户',
-          width: 'auto',
-          fixed: 'right',
-          ellipsis: true,
-          colKey: 'customer',
+          label: '二级操作',
+          value: '2',
         },
       ],
-      rowKey: 'index',
-      tableLayout: 'auto',
-      verticalAlign: 'middle',
-      hover: true,
-      rowClassName: (rowKey: string) => `${rowKey}-class`,
-      // 与pagination对齐
-      pagination: {
-        defaultPageSize: 20,
-        total: 100,
-        defaultCurrent: 1,
-      },
-      searchValue: '',
-      confirmVisible: false,
-      deleteIdx: -1,
+      value: 'first',
+      expanded: ['0', '0-0', '0-1', '0-2', '0-3', '0-4'],
+      items: [
+        {
+          label: '深圳总部',
+          value: 0,
+          children: [
+            {
+              label: '总办',
+              value: '0-0',
+            },
+            {
+              label: '市场部',
+              value: '0-1',
+              children: [
+                {
+                  label: '采购1组',
+                  value: '0-1-0',
+                },
+                {
+                  label: '采购2组',
+                  value: '0-1-1',
+                },
+              ],
+            },
+            {
+              label: '技术部',
+              value: '0-2',
+            },
+          ],
+        },
+        {
+          label: '北京总部',
+          value: 1,
+          children: [
+            {
+              label: '总办',
+              value: '1-0',
+            },
+            {
+              label: '市场部',
+              value: '1-1',
+              children: [
+                {
+                  label: '采购1组',
+                  value: '1-1-0',
+                },
+                {
+                  label: '采购2组',
+                  value: '1-1-1',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: '上海总部',
+          value: 2,
+          children: [
+            {
+              label: '市场部',
+              value: '2-0',
+            },
+            {
+              label: '财务部',
+              value: '2-1',
+              children: [
+                {
+                  label: '财务1组',
+                  value: '2-1-0',
+                },
+                {
+                  label: '财务2组',
+                  value: '2-1-1',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: '湖南',
+          value: 3,
+        },
+        {
+          label: '湖北',
+          value: 4,
+        },
+      ],
     };
-  },
-  computed: {
-    confirmBody() {
-      if (this.deleteIdx > -1) {
-        const {UUID} = this.tableData?.[this.deleteIdx];
-        return `删除后，${UUID}的所有信息将被清空，且无法恢复`;
-      }
-      return '';
-    },
-    offsetTop() {
-      return this.$store.state.setting.isUseTabsRouter ? 48 : 0;
-    },
-  },
-  mounted() {
-    this.dataLoading = true;
-    // this.$request
-    //   .get('/api/get-list')
-    //   .then((res) => {
-    //     if (res.code === 0) {
-    //       const { list = [] } = res.data;
-    //       this.data = list;
-    //       this.pagination = {
-    //         ...this.pagination,
-    //         total: list.length,
-    //       };
-    //     }
-    //   })
-    //   .catch((e: Error) => {
-    //     console.log(e);
-    //   })
-    //   .finally(() => {
-    //     this.dataLoading = false;
-    //   });
-    this.initMqtt();
-    this.updateChartData();
-    setInterval(() => {
-      this.updateChartData();
-      this.pagination.total = this.tableData.length;
-    }, 100);
   },
 
   methods: {
-    getContainer() {
-      return document.querySelector('.tdesign-starter-layout');
-    },
-    rehandlePageChange(curr, pageInfo) {
-      console.log('分页变化', curr, pageInfo);
-    },
-    rehandleSelectChange(selectedRowKeys: number[]) {
-      this.selectedRowKeys = selectedRowKeys;
-    },
-    rehandleChange(changeParams, triggerAndData) {
-      console.log('统一Change', changeParams, triggerAndData);
-    },
-    handleClickDetail() {
-      this.$router.push('/detail/base');
-    },
-    handleSetupContract() {
-      this.$router.push('/form/base');
-    },
-    handleClickDelete(row: { rowIndex: any }) {
-      this.deleteIdx = row.rowIndex;
-      this.confirmVisible = true;
-    },
-    onConfirmDelete() {
-      // 真实业务请发起请求
-      this.tableData.splice(this.deleteIdx, 1);
-      this.pagination.total = this.tableData.length;
-      const selectedIdx = this.selectedRowKeys.indexOf(this.deleteIdx);
-      if (selectedIdx > -1) {
-        this.selectedRowKeys.splice(selectedIdx, 1);
-      }
-      this.confirmVisible = false;
-      this.$message.success('删除成功');
-      this.resetIdx();
-    },
-    onCancel() {
-      this.resetIdx();
-    },
-    resetIdx() {
-      this.deleteIdx = -1;
-    },
-    handleNav(url) {
-      this.$router.push(url);
-    },
-
-    /**
-     * MQTT连接函数
-     */
-    initMqtt() {
-      // 连接配置选项
-      let options = {
-        connectTimeout: 4000, // 超时时间
-        clientId: '', // 不填默认随机生成一个ID
-      }
-      this.client = mqtt.connect('ws://106.15.121.181:8083/mqtt', options)
-      this.client1 = mqtt.connect('ws://122.51.210.27:8083/mqtt', options)
-
-      // 连接成功
-      this.client.on('connect', () => {
-        this.mqttConnectionStatus = '已连接';
-        console.log('连接成功');
-
-        // 连接成功后订阅消息
-        this.subscribes();
-      });
-
-      // 重连提醒
-      this.client.on('reconnect', () => {
-        this.mqttConnectionStatus = '正在重连';
-        console.log('正在重连');
-      });
-
-      // 连接失败提醒
-      this.client.on('error', (error) => {
-        this.mqttConnectionStatus = '连接失败';
-        console.log('连接失败', error);
-      });
-    },
-
-    /**
-     * MQTT订阅函数(订阅多个信息)
-     */
-    subscribes() {
-      const arr = ['/sys/ibms_shgh_zm/gs08291110/thing/event/current/post', '/sys/ibms_shgh_zm/gs08291110/thing/event/consumption/post']
-      this.client.subscribe(arr, {qos: 1}, (err) => {
-        if (!err) {
-          console.log(`主题为：“${arr}” 的消息订阅成功`)
-        } else {
-          console.log('消息订阅失败')
-        }
-      })
-      const arr1 = ['led/emqx', 'temp_hum/emqx']
-      this.client1.subscribe(arr1, {qos: 1}, (err) => {
-        if (!err) {
-          console.log(`主题为：“${arr1}” 的消息订阅成功`)
-        } else {
-          console.log('消息订阅失败')
-        }
-      })
-      // 在订阅成功后更新 receivedMessages 数组
-      this.client.on('message', function (topic, message, packet) {
-        this.handleReceivedMessage(topic, message, packet);
-        console.log(`接收到消息，主题：${topic}, 消息：${message.toString()}`);
-      }.bind(this));
-
-      this.client1.on('message', function (topic, message, packet) {
-        this.handleReceivedMessage(topic, message, packet);
-        console.log(`接收到消息，主题：${topic}, 消息：${message.toString()}`);
-      }.bind(this));
-    },
-
-    /**
-     * MQTT发布信息
-     */
-    publish(topic, message) {
-      if (!this.client.connected) {
-        console.log('客户端未连接')
-        return
-      }
-      this.client.publish(topic, message, {qos: 0}, (err) => {
-        if (!err) {
-          console.log(`主题为：${topic},内容为：${message} 发布成功`)
-        }
-      })
-    },
-
-    /**
-     * 从订阅主题消息中获取相应键值数据
-     */
-    getLatestValueByTopic(topic, key) {
-      const messagesForTopic = this.receivedMessages.filter(message => message.topic === topic)
-      if (messagesForTopic.length > 0) {
-        const messageContent = JSON.parse(messagesForTopic[0].message)
-        return messageContent[key] !== undefined ? messageContent[key] : 'N/A'
-      } else {
-        return 'N/A' // 如果没有匹配到消息，返回 "N/A"
-      }
-    },
-
-    /**
-     * 更新数据数组
-     */
-    updateChartData() {
-      const temperature = this.getLatestValueByTopic('temp_hum/emqx', 'temp');
-      const humidity = this.getLatestValueByTopic('temp_hum/emqx', 'hum');
-      const light = this.getLatestValueByTopic('temp_hum/emqx', 'light');
-      const power = this.getLatestValueByTopic('temp_hum/emqx', 'power');
-      const id = this.getLatestValueByTopic('temp_hum/emqx', 'id');
-      const lng = this.getLatestValueByTopic('temp_hum/emqx', 'lng');
-      const lat = this.getLatestValueByTopic('temp_hum/emqx', 'lat');
-
-      // 判断是否要添加数据
-      if (temperature !== 'N/A' && humidity !== 'N/A' && light !== 'N/A' && power !== 'N/A') {
-        const currentTime = new Date();
-        const currentTimeString = currentTime.toISOString();
-
-        // 删除旧数据
-        this.temperatureData = this.temperatureData.slice(-10);
-        this.humidityData = this.humidityData.slice(-10);
-        this.lightingData = this.lightingData.slice(-10);
-        this.powerData = this.powerData.slice(-10);
-        this.idData = this.idData.slice(-10);
-        this.lngData = this.lngData.slice(-10);
-        this.latData = this.latData.slice(-10);
-
-        // 判断是否是新数据
-        if (!this.temperatureData.length || this.temperatureData[0].time !== currentTimeString) {
-          // 添加新数据
-          this.temperatureData.push({time: currentTimeString, value: temperature});
-          this.humidityData.push({time: currentTimeString, value: humidity});
-          this.lightingData.push({time: currentTimeString, value: light});
-          this.powerData.push({time: currentTimeString, value: power});
-          this.idData.push({time: currentTimeString, value: id});
-          this.lngData.push({time: currentTimeString, value: lng});
-          this.latData.push({time: currentTimeString, value: lat});
-          this.timeData.push(currentTimeString);
-        }
-      }
-    },
-    /**
-     * 数据处理
-     */
-    handleReceivedMessage(topic, message, packet) {
-      // 解析 MQTT 消息
-      const mqttData = JSON.parse(message.toString());
-      // 分割 number 字符串
-      const numberParts = mqttData.params.value.number.split(' ');
-      // 提取你需要的部分
-      const firstPart = numberParts[0];
-      // 提取你需要的部分
-      const secondPart = numberParts[1]; // 获取 "5B"
-      // 提取数据并添加到表格数据中
-      const rowData = {
-        UUID: mqttData.params.value.uuid,
-        area: mqttData.params.value.area,
-        group: firstPart,
-        mark: secondPart,
-        gateway: mqttData.params.value.device_name,
-        // location: mqttData.params.value.current_bright,
-        // account: mqttData.params.value.current_cct,
-        // username: mqttData.params.value.power,
-        // customer: "坤科节能",
-        // 其他字段根据需要添加
+    onInput() {
+      this.filterByText = (node) => {
+        const rs = node.label.indexOf(this.filterText) >= 0;
+        return rs;
       };
-      // 将数据添加到表格数据数组中
-      this.tableData.unshift(rowData);
-      this.dataLoading = false;
     },
-    // /**
-    //  * 数据处理
-    //  */
-    // handleReceivedMessage(topic, message, packet) {
-    //   this.receivedMessages.unshift({
-    //     topic,
-    //     message: message.toString(),
-    //     qos: packet.qos,
-    //     time: new Date(),
-    //   });
-    //
-    // },
+    rehandleClickOp({ text, row }) {
+      console.log(text, row);
+    },
   },
-});
+};
 </script>
 
 <style lang="less" scoped>
-@import '@/style/variables';
+@import '@/style/variables.less';
 
-.payment-col {
-  display: flex;
+.table-tree-container {
+  background-color: var(--td-bg-color-container);
+  border-radius: var(--td-radius-default);
 
-  .trend-container {
-    display: flex;
-    align-items: center;
-    margin-left: 8px;
+  .t-tree {
+    margin-top: 24px;
   }
 }
 
-.left-operation-container {
-  padding: 0 0 6px 0;
-  margin-bottom: 16px;
-
-  .selected-count {
-    display: inline-block;
-    margin-left: var(--td-comp-margin-s);
-    color: var(--td-text-color-secondary);
-  }
+.list-tree-wrapper {
+  overflow-y: hidden;
 }
 
-.search-input {
-  width: 360px;
+.list-tree-operator {
+  width: 200px;
+  float: left;
+  padding: 30px 32px;
 }
 
-.t-button + .t-button {
-  margin-left: var(--td-comp-margin-s);
+.list-tree-content {
+  border-left: 1px solid var(--td-component-border);
+  overflow: auto;
 }
 </style>

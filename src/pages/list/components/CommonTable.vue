@@ -24,31 +24,21 @@
               </t-form-item>
             </t-col>
             <t-col :flex="1">
-              <t-form-item label="区" name="status">
-                <t-input
-                  v-model="formData.no"
-                  class="form-item-content"
-                  placeholder="请输入区号"
-                  :style="{ minWidth: '134px' }"
+              <t-form-item label="区号" name="status">
+                <t-select
+                  v-model="formData.status"
+                  class="form-item-content`"
+                  :options="CONTRACT_STATUS_OPTIONS"
+                  placeholder="请选择区号"
                 />
               </t-form-item>
             </t-col>
             <t-col :flex="1">
-              <t-form-item label="组" name="no">
+              <t-form-item label="组号" name="no">
                 <t-input
                   v-model="formData.no"
                   class="form-item-content"
                   placeholder="请输入组号"
-                  :style="{ minWidth: '134px' }"
-                />
-              </t-form-item>
-            </t-col>
-            <t-col :flex="1">
-              <t-form-item label="号" name="no">
-                <t-input
-                  v-model="formData.no"
-                  class="form-item-content"
-                  placeholder="请输入号"
                   :style="{ minWidth: '134px' }"
                 />
               </t-form-item>
@@ -304,7 +294,7 @@ export default {
       // 与pagination对齐
       pagination: {
         defaultPageSize: 20,
-        total: 100,
+        total: 1000,
         defaultCurrent: 1,
       },
       confirmVisible: false,
@@ -314,8 +304,8 @@ export default {
   computed: {
     confirmBody() {
       if (this.deleteIdx > -1) {
-        const { name } = this.data?.[this.deleteIdx];
-        return `删除后，${name}的所有合同信息将被清空，且无法恢复`;
+        const { uuid } = this.tableData?.[this.deleteIdx];
+        return `删除后，${uuid}的所有合同信息将被清空，且无法恢复`;
       }
       return '';
     },
@@ -326,9 +316,8 @@ export default {
   mounted() {
     this.dataLoading = true;
     this.initMqtt();
-    this.updateChartData();
-    this.chartUpdateInterval = setInterval(() => {
-      this.updateChartData();
+    setInterval(() => {
+      this.pagination.total = this.tableData.length;
     }, 100);
 
   },
@@ -340,11 +329,11 @@ export default {
     getContainer() {
       return document.querySelector('.tdesign-starter-layout');
     },
-    onReset(data) {
-      console.log(data);
+    onReset(tableData) {
+      console.log(tableData);
     },
-    onSubmit(data) {
-      console.log(data);
+    onSubmit(tableData) {
+      console.log(tableData);
     },
     rehandlePageChange(curr, pageInfo) {
       console.log('分页变化', curr, pageInfo);
@@ -361,8 +350,8 @@ export default {
     },
     onConfirmDelete() {
       // 真实业务请发起请求
-      this.data.splice(this.deleteIdx, 1);
-      this.pagination.total = this.data.length;
+      this.tableData.splice(this.deleteIdx, 1);
+      this.pagination.total = this.tableData.length;
       this.confirmVisible = false;
       this.$message.success('删除成功');
       this.resetIdx();
@@ -467,6 +456,47 @@ export default {
         return 'N/A' // 如果没有匹配到消息，返回 "N/A"
       }
     },
+
+    // /**
+    //  * 更新数据数组
+    //  */
+    // updateChartData() {
+    //   const temperature = this.getLatestValueByTopic('temp_hum/emqx', 'temp');
+    //   const humidity = this.getLatestValueByTopic('temp_hum/emqx', 'hum');
+    //   const light = this.getLatestValueByTopic('temp_hum/emqx', 'light');
+    //   const power = this.getLatestValueByTopic('temp_hum/emqx', 'power');
+    //   const id = this.getLatestValueByTopic('temp_hum/emqx', 'id');
+    //   const lng = this.getLatestValueByTopic('temp_hum/emqx', 'lng');
+    //   const lat = this.getLatestValueByTopic('temp_hum/emqx', 'lat');
+    //
+    //   // 判断是否要添加数据
+    //   if (temperature !== 'N/A' && humidity !== 'N/A' && light !== 'N/A' && power !== 'N/A') {
+    //     const currentTime = new Date();
+    //     const currentTimeString = currentTime.toISOString();
+    //
+    //     // 删除旧数据
+    //     this.temperatureData = this.temperatureData.slice(-10);
+    //     this.humidityData = this.humidityData.slice(-10);
+    //     this.lightingData = this.lightingData.slice(-10);
+    //     this.powerData = this.powerData.slice(-10);
+    //     this.idData = this.idData.slice(-10);
+    //     this.lngData = this.lngData.slice(-10);
+    //     this.latData = this.latData.slice(-10);
+    //
+    //     // 判断是否是新数据
+    //     if (!this.temperatureData.length || this.temperatureData[0].time !== currentTimeString) {
+    //       // 添加新数据
+    //       this.temperatureData.push({time: currentTimeString, value: temperature});
+    //       this.humidityData.push({time: currentTimeString, value: humidity});
+    //       this.lightingData.push({time: currentTimeString, value: light});
+    //       this.powerData.push({time: currentTimeString, value: power});
+    //       this.idData.push({time: currentTimeString, value: id});
+    //       this.lngData.push({time: currentTimeString, value: lng});
+    //       this.latData.push({time: currentTimeString, value: lat});
+    //       this.timeData.push(currentTimeString);
+    //     }
+    //   }
+    // },
     /**
      * 数据处理
      */
@@ -494,17 +524,11 @@ export default {
         delay_time: this.convertUnixTimestampToDateTime(mqttData.params.value.delay_time),
         delay_time2: this.convertUnixTimestampToDateTime(mqttData.params.value.delay_time2),
         time_dur: this.convertUnixTimestampToDateTime(mqttData.params.value.time_dur),
-        gateway: mqttData.params.value.device_name,
         customer: "坤科节能",
       };
       // 将数据添加到表格数据数组中
       this.tableData.unshift(rowData);
       this.dataLoading = false;
-
-      // 更新下拉选项为最新的gateway值
-      this.CONTRACT_TYPE_OPTIONS = [...new Set([...this.CONTRACT_TYPE_OPTIONS, mqttData.params.value.device_name])];
-      // 重新设置formData.type为最新的gateway值
-      this.formData.type = mqttData.params.value.device_name;
     },
   },
 };
