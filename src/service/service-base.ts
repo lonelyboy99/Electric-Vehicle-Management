@@ -210,10 +210,7 @@ export class MqttConnection {
     // 调用initMqtt方法
     this.initMqtt();
     setInterval(() => {
-      PANE_LIST_DATA[0].number = this.getLatestValueByTopic('online/emqx', 'temp');
-      PANE_LIST_DATA[1].number = this.getLatestValueByTopic('online/emqx', 'hum');
-      PANE_LIST_DATA[2].number = this.getLatestValueByTopic('online/emqx', 'light');
-      PANE_LIST_DATA[3].number = this.getLatestValueByTopic('online/emqx', 'power');
+      this.updateNumber()
     }, 1000);
   }
 
@@ -236,18 +233,24 @@ export class MqttConnection {
 
       // 连接成功后订阅消息
       this.subscribes();
+      // 更新number属性的值为实际的连接状态
+      this.updateNumber();
     });
 
     // 重连提醒
     this.client.on('reconnect', () => {
       this.mqttConnectionStatus = '正在重连';
       console.log('正在重连');
+      // 更新number属性的值为实际的连接状态
+      this.updateNumber();
     });
 
     // 连接失败提醒
     this.client.on('error', (error) => {
       this.mqttConnectionStatus = '连接失败';
       console.log('连接失败', error);
+      // 更新number属性的值为实际的连接状态
+      this.updateNumber();
     });
   }
 
@@ -293,6 +296,13 @@ export class MqttConnection {
       qos: packet.qos,
       time: new Date(),
     });
+  }
+  updateNumber() {
+    PANE_LIST[3].number = this.mqttConnectionStatus;
+    PANE_LIST_DATA[0].number = this.getLatestValueByTopic('online/emqx', 'temp');
+    PANE_LIST_DATA[1].number = this.getLatestValueByTopic('online/emqx', 'hum');
+    PANE_LIST_DATA[2].number = this.getLatestValueByTopic('online/emqx', 'light');
+    PANE_LIST_DATA[3].number = this.getLatestValueByTopic('online/emqx', 'power');
   }
 }
 

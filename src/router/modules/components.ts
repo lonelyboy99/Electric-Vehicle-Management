@@ -36,6 +36,12 @@ export default [
         component: () => import('@/pages/form/base/index.vue'),
         meta: { title: '工单录入' },
       },
+      {
+        path: 'filter',
+        name: 'ListFilter',
+        component: () => import('@/pages/form/filter/index.vue'),
+        meta: { title: '工单信息' },
+      },
     ],
   },
   {
