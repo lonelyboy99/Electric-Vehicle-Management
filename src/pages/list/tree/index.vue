@@ -33,62 +33,38 @@ export default {
       options: [
         {
           label: '一级操作',
-          value: '1',
+          value: '0',
         },
         {
           label: '二级操作',
-          value: '2',
+          value: '1',
         },
       ],
       value: 'first',
       expanded: ['0', '0-0', '0-1', '0-2', '0-3', '0-4'],
       items: [
         {
-          label: '深圳总部',
-          value: 0,
-          children: [
-            {
-              label: '总办',
-              value: '0-0',
-            },
-            {
-              label: '市场部',
-              value: '0-1',
-              children: [
-                {
-                  label: '采购1组',
-                  value: '0-1-0',
-                },
-                {
-                  label: '采购2组',
-                  value: '0-1-1',
-                },
-              ],
-            },
-            {
-              label: '技术部',
-              value: '0-2',
-            },
-          ],
-        },
-        {
-          label: '北京总部',
+          label: '南京项目',
           value: 1,
           children: [
             {
-              label: '总办',
+              label: 'xx',
               value: '1-0',
             },
             {
-              label: '市场部',
+              label: '景枫',
               value: '1-1',
               children: [
                 {
-                  label: '采购1组',
+                  label: '灯组',
                   value: '1-1-0',
                 },
                 {
-                  label: '采购2组',
+                  label: '网关',
+                  value: '1-1-1',
+                },
+                {
+                  label: '设备位置',
                   value: '1-1-1',
                 },
               ],
@@ -96,23 +72,27 @@ export default {
           ],
         },
         {
-          label: '上海总部',
+          label: 'xx项目',
           value: 2,
           children: [
             {
-              label: '市场部',
+              label: 'xx',
               value: '2-0',
             },
             {
-              label: '财务部',
+              label: 'xx',
               value: '2-1',
               children: [
                 {
-                  label: '财务1组',
+                  label: '灯组',
                   value: '2-1-0',
                 },
                 {
-                  label: '财务2组',
+                  label: '网关',
+                  value: '2-1-1',
+                },
+                {
+                  label: '设备位置',
                   value: '2-1-1',
                 },
               ],
@@ -120,12 +100,32 @@ export default {
           ],
         },
         {
-          label: '湖南',
+          label: 'xx项目',
           value: 3,
-        },
-        {
-          label: '湖北',
-          value: 4,
+          children: [
+            {
+              label: 'xx',
+              value: '3-0',
+            },
+            {
+              label: 'xx',
+              value: '3-1',
+              children: [
+                {
+                  label: '灯组',
+                  value: '2-1-0',
+                },
+                {
+                  label: '网关',
+                  value: '2-1-1',
+                },
+                {
+                  label: '设备位置',
+                  value: '2-1-1',
+                },
+              ],
+            },
+          ],
         },
       ],
     };

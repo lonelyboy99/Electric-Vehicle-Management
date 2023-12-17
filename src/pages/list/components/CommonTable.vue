@@ -94,10 +94,10 @@
               </t-form-item>
             </t-col>
             <t-col>
-            <t-button theme="primary" type="submit" :style="{ marginLeft: '8px' }"> 常亮</t-button>
-            <t-button type="reset" variant="base"> 常灭</t-button>
-            <t-button type="reset" variant="base"> 闪一闪 </t-button>
-            <t-button type="reset" variant="base"> 停止闪</t-button>
+              <t-button type="reset" variant="base" @click="sendMqttMessage('常亮')">常亮</t-button>
+              <t-button type="reset" variant="base" @click="sendMqttMessage('常灭')">常灭</t-button>
+              <t-button type="reset" variant="base" @click="sendMqttMessage('闪一闪')">闪一闪</t-button>
+              <t-button type="reset" variant="base" @click="sendMqttMessage('停止闪')">停止闪</t-button>
             <t-button type="reset" variant="base"> 休眠 </t-button>
             <t-button type="reset" variant="base"> 更多操作 </t-button>
         </t-col>
@@ -443,7 +443,26 @@ export default {
         }
       })
     },
+    /**
+     * MQTT发送指令
+     */
+    sendMqttMessage(mode) {
+      const message = {
+        code: 200,
+        deviceName: "lampNode",
+        area: "00 01",
+        address: "00 03",
+        action: "setLightMode",
+        params: mode,
+        identity: ""
+      };
 
+      // Convert the message object to a JSON string
+      const jsonString = JSON.stringify(message);
+
+      // Publish the JSON string to the desired MQTT topic
+      this.publish("/ibms_shgh_zm/gs08291110/user/get", jsonString);
+    },
     /**
      * 从订阅主题消息中获取相应键值数据
      */
