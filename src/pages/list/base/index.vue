@@ -43,7 +43,6 @@ import {SearchIcon} from 'tdesign-icons-vue';
 import Trend from '@/components/trend/index.vue';
 import {prefix} from '@/config/global';
 import mqtt from 'mqtt';
-import {CONTRACT_STATUS, CONTRACT_STATUS_OPTIONS, CONTRACT_TYPES, CONTRACT_PAYMENT_TYPES} from '@/constants';
 
 export default Vue.extend({
   name: 'ListBase',
@@ -53,14 +52,10 @@ export default Vue.extend({
   },
   data() {
     return {
-      CONTRACT_STATUS,
-      CONTRACT_STATUS_OPTIONS,
-      CONTRACT_TYPES,
-      CONTRACT_PAYMENT_TYPES,
       prefix,
       dataLoading: false,
       receivedMessages: [],
-      selectedRowKeys: [0],
+      selectedRowKeys: [1],
       value: 'first',
       tableData: [],
       columns: [
@@ -126,6 +121,7 @@ export default Vue.extend({
       rowKey: 'index',
       tableLayout: 'auto',
       verticalAlign: 'middle',
+      bordered: true,
       hover: true,
       rowClassName: (rowKey: string) => `${rowKey}-class`,
       // 与pagination对齐
@@ -153,24 +149,6 @@ export default Vue.extend({
   },
   mounted() {
     this.dataLoading = true;
-    // this.$request
-    //   .get('/api/get-list')
-    //   .then((res) => {
-    //     if (res.code === 0) {
-    //       const { list = [] } = res.data;
-    //       this.data = list;
-    //       this.pagination = {
-    //         ...this.pagination,
-    //         total: list.length,
-    //       };
-    //     }
-    //   })
-    //   .catch((e: Error) => {
-    //     console.log(e);
-    //   })
-    //   .finally(() => {
-    //     this.dataLoading = false;
-    //   });
     this.initMqtt();
     this.updateChartData();
     setInterval(() => {

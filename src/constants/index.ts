@@ -2,45 +2,16 @@ interface IOption {
   value: number | string;
   label: string;
 }
-// 合同状态枚举
-export const CONTRACT_STATUS = {
-  FAIL: 0,
-  AUDIT_PENDING: 1,
-  EXEC_PENDING: 2,
-  EXECUTING: 3,
-  FINISH: 4,
-};
 
-export const CONTRACT_STATUS_OPTIONS: Array<IOption> = [
-  { value: CONTRACT_STATUS.FAIL, label: '审核失败' },
-  { value: CONTRACT_STATUS.AUDIT_PENDING, label: '待审核' },
-  { value: CONTRACT_STATUS.EXEC_PENDING, label: '待履行' },
-  { value: CONTRACT_STATUS.EXECUTING, label: '审核成功' },
-  { value: CONTRACT_STATUS.FINISH, label: '已完成' },
+export const DEVICE_NAME: Array<IOption>= [
+{ value: '00 01', label: '00 01' },
+{ value: '00 02', label: '00 02' },
 ];
 
-// 合同类型枚举
-export const CONTRACT_TYPES = {
-  MAIN: 0,
-  SUB: 1,
-  SUPPLEMENT: 2,
-};
-
-export const CONTRACT_TYPE_OPTIONS: Array<IOption> = [
-  { value: CONTRACT_TYPES.MAIN, label: '主合同' },
-  { value: CONTRACT_TYPES.SUB, label: '子合同' },
-  { value: CONTRACT_TYPES.SUPPLEMENT, label: '补充合同' },
+export const LIGHT_CONTROL: Array<IOption> = [
+  { value: '1', label: '场所灯操作' },
+  { value: '2', label: '区操作' },
+  { value: '3', label: '单灯操作' },
+  { value: '4', label: '群组操作' },
+  { value: '5', label: '标签操作' },
 ];
-
-// 合同收付类型枚举
-export const CONTRACT_PAYMENT_TYPES = {
-  PAYMENT: 0,
-  RECIPT: 1,
-};
-
-// 通知的优先级对应的TAG类型
-export const NOTIFICATION_TYPES = {
-  low: 'primary',
-  middle: 'warning',
-  high: 'danger',
-};

@@ -25,11 +25,12 @@
             </t-col>
             <t-col :flex="1">
               <t-form-item label="区号" name="status">
-                <t-select
-                  v-model="formData.status"
-                  class="form-item-content`"
-                  :options="CONTRACT_STATUS_OPTIONS"
-                  placeholder="请选择区号"
+                <t-input
+                  v-model="formData.name"
+                  class="form-item-content"
+                  type="search"
+                  placeholder="请输入区"
+                  :style="{ minWidth: '134px' }"
                 />
               </t-form-item>
             </t-col>
@@ -40,16 +41,6 @@
                   class="form-item-content"
                   placeholder="请输入组号"
                   :style="{ minWidth: '134px' }"
-                />
-              </t-form-item>
-            </t-col>
-            <t-col :flex="1">
-              <t-form-item label="网关" name="type">
-                <t-select
-                  v-model="formData.type"
-                  class="form-item-content`"
-                  :options="CONTRACT_TYPE_OPTIONS"
-                  placeholder="请选择网关"
                 />
               </t-form-item>
             </t-col>
@@ -71,36 +62,77 @@
       :style="{ marginBottom: '8px' }"
     >
       <t-row>
-        <t-col :span="10">
+        <t-col :span="16">
           <t-row :gutter="[16, 24]">
             <t-col>
               <t-form-item label="灯控操作" name="status">
                 <t-select
+                  :auto-width="true"
                   v-model="formData.status"
                   class="form-item-content`"
-                  :options="CONTRACT_STATUS_OPTIONS"
+                  :options="LIGHT_CONTROL"
                   placeholder="请选择操作类型"
                 />
               </t-form-item>
             </t-col>
-            <t-col>
-              <t-form-item label="网关" name="status">
+            <t-col v-if="showSelect">
+              <t-form-item label="网关" name="device_name">
                 <t-select
-                  v-model="formData.status"
+                  v-model="formData.device_name"
                   class="form-item-content`"
-                  :options="CONTRACT_STATUS_OPTIONS"
+                  :options="DEVICE_NAME"
                   placeholder="请选择操作类型"
                 />
               </t-form-item>
             </t-col>
-            <t-col>
-              <t-button type="reset" variant="base" @click="sendMqttMessage('常亮')">常亮</t-button>
-              <t-button type="reset" variant="base" @click="sendMqttMessage('常灭')">常灭</t-button>
-              <t-button type="reset" variant="base" @click="sendMqttMessage('闪一闪')">闪一闪</t-button>
-              <t-button type="reset" variant="base" @click="sendMqttMessage('停止闪')">停止闪</t-button>
-            <t-button type="reset" variant="base"> 休眠 </t-button>
-            <t-button type="reset" variant="base"> 更多操作 </t-button>
-        </t-col>
+            <t-col v-if="showSelect">
+              <t-form-item label="区" name="area">
+                <t-select
+                  v-model="formData.area"
+                  class="form-item-content`"
+                  :options="AREA"
+                  placeholder="请选择操作类型"
+                />
+              </t-form-item>
+            </t-col>
+            <t-col v-if="showSelect1">
+              <t-form-item label="号" name="number">
+                <t-select
+                  v-model="formData.number"
+                  class="form-item-content`"
+                  :options="NUMBER"
+                  placeholder="请选择操作类型"
+                />
+              </t-form-item>
+            </t-col>
+            <t-col v-if="showSelect2">
+              <t-form-item label="组" name="number">
+                <t-select
+                  v-model="formData.number"
+                  class="form-item-content`"
+                  :options="NUMBER"
+                  placeholder="请选择操作类型"
+                />
+              </t-form-item>
+            </t-col>
+            <t-col v-if="showSelect3">
+              <t-form-item label="标签" name="number">
+                <t-select
+                  v-model="formData.number"
+                  class="form-item-content`"
+                  :options="NUMBER"
+                  placeholder="请选择操作类型"
+                />
+              </t-form-item>
+            </t-col>
+            <t-col :flex="1">
+              <t-button variant="base" @click="sendMqttMessage('setLightMode','常亮')">常亮</t-button>
+              <t-button variant="base" @click="sendMqttMessage('setLightMode','常灭')">常灭</t-button>
+              <t-button variant="base" @click="sendMqttMessage('blink','闪一闪')">闪一闪</t-button>
+              <t-button variant="base" @click="sendMqttMessage('stopBlink','停止闪')">停止闪</t-button>
+              <t-button variant="base" @click="sendMqttMessage('setLightMode','休眠')"> 休眠 </t-button>
+              <t-button variant="base"> 更多操作 </t-button>
+             </t-col>
           </t-row>
         </t-col>
       </t-row>
@@ -125,7 +157,7 @@
         </template>
       </t-table>
       <t-dialog
-        header="确认删除当前所选合同？"
+        header="确认删除当前所选设备？"
         :body="confirmBody"
         :visible.sync="confirmVisible"
         @confirm="onConfirmDelete"
@@ -140,11 +172,8 @@ import { prefix } from '@/config/global';
 import Trend from '@/components/trend/index.vue';
 
 import {
-  CONTRACT_STATUS,
-  CONTRACT_STATUS_OPTIONS,
-  CONTRACT_TYPES,
-  CONTRACT_TYPE_OPTIONS,
-  CONTRACT_PAYMENT_TYPES,
+  // DEVICE_NAME,
+  LIGHT_CONTROL,
 } from '@/constants';
 import mqtt from "mqtt";
 
@@ -155,16 +184,19 @@ export default {
   },
   data() {
     return {
-      CONTRACT_STATUS,
-      CONTRACT_STATUS_OPTIONS,
-      CONTRACT_TYPES,
-      CONTRACT_TYPE_OPTIONS,
-      CONTRACT_PAYMENT_TYPES,
+      DEVICE_NAME: [],
+      AREA: [],
+      NUMBER: [],
+      LIGHT_CONTROL,
+      showSelect: false,
+      showSelect1: false,
+      showSelect2: false,
+      showSelect3: false,
       prefix,
       formData: {
-        name: '',
-        no: undefined,
-        status: undefined,
+        device_name: '',
+        area: '',
+        number: '',
       },
       selectedRowKeys: [1],
       data: [],
@@ -286,7 +318,7 @@ export default {
           title: '操作',
         },
       ],
-      rowKey: 'index',
+      rowKey: 'uuid',
       tableLayout: 'auto',
       verticalAlign: 'middle',
       hover: true,
@@ -301,11 +333,32 @@ export default {
       deleteIdx: -1,
     };
   },
+  watch:{
+    'formData.status': function(newStatus) {
+      // 检查第一个下拉菜单的选定值并更新第二个下拉菜单的选项
+      if(newStatus === '1'){
+        this.formData.code = 400;
+      }
+      if (newStatus === '2' || newStatus === '3' || newStatus === '4'|| newStatus === '5') {
+        // 如果选择了"区操作"，显示第二个下拉菜单并更新其选项
+        this.formData.code = 200;
+        this.showSelect = true;
+        this.showSelect1 = newStatus === '3';
+        this.showSelect2 = newStatus === '4';
+        this.showSelect3 = newStatus === '5';
+      } else {
+        this.showSelect = false;
+        this.showSelect1 = newStatus === '3';
+        this.showSelect2 = newStatus === '4';
+        this.showSelect3 = newStatus === '5';
+      }
+    },
+  },
   computed: {
     confirmBody() {
       if (this.deleteIdx > -1) {
         const { uuid } = this.tableData?.[this.deleteIdx];
-        return `删除后，${uuid}的所有合同信息将被清空，且无法恢复`;
+        return `删除后，${uuid}的所有信息将被清空，且无法恢复`;
       }
       return '';
     },
@@ -444,23 +497,20 @@ export default {
       })
     },
     /**
-     * MQTT发送指令
+     * MQTT发送控灯指令
      */
-    sendMqttMessage(mode) {
+    sendMqttMessage(formData,action,mode) {
       const message = {
-        code: 200,
-        deviceName: "lampNode",
-        area: "00 01",
-        address: "00 03",
-        action: "setLightMode",
+        code: this.formData.code,
+        deviceName: this.formData.device_name,
+        area: this.formData.area,
+        address: this.formData.number,
+        action: action,
         params: mode,
         identity: ""
       };
 
-      // Convert the message object to a JSON string
       const jsonString = JSON.stringify(message);
-
-      // Publish the JSON string to the desired MQTT topic
       this.publish("/ibms_shgh_zm/gs08291110/user/get", jsonString);
     },
     /**
@@ -475,55 +525,39 @@ export default {
         return 'N/A' // 如果没有匹配到消息，返回 "N/A"
       }
     },
-
-    // /**
-    //  * 更新数据数组
-    //  */
-    // updateChartData() {
-    //   const temperature = this.getLatestValueByTopic('temp_hum/emqx', 'temp');
-    //   const humidity = this.getLatestValueByTopic('temp_hum/emqx', 'hum');
-    //   const light = this.getLatestValueByTopic('temp_hum/emqx', 'light');
-    //   const power = this.getLatestValueByTopic('temp_hum/emqx', 'power');
-    //   const id = this.getLatestValueByTopic('temp_hum/emqx', 'id');
-    //   const lng = this.getLatestValueByTopic('temp_hum/emqx', 'lng');
-    //   const lat = this.getLatestValueByTopic('temp_hum/emqx', 'lat');
-    //
-    //   // 判断是否要添加数据
-    //   if (temperature !== 'N/A' && humidity !== 'N/A' && light !== 'N/A' && power !== 'N/A') {
-    //     const currentTime = new Date();
-    //     const currentTimeString = currentTime.toISOString();
-    //
-    //     // 删除旧数据
-    //     this.temperatureData = this.temperatureData.slice(-10);
-    //     this.humidityData = this.humidityData.slice(-10);
-    //     this.lightingData = this.lightingData.slice(-10);
-    //     this.powerData = this.powerData.slice(-10);
-    //     this.idData = this.idData.slice(-10);
-    //     this.lngData = this.lngData.slice(-10);
-    //     this.latData = this.latData.slice(-10);
-    //
-    //     // 判断是否是新数据
-    //     if (!this.temperatureData.length || this.temperatureData[0].time !== currentTimeString) {
-    //       // 添加新数据
-    //       this.temperatureData.push({time: currentTimeString, value: temperature});
-    //       this.humidityData.push({time: currentTimeString, value: humidity});
-    //       this.lightingData.push({time: currentTimeString, value: light});
-    //       this.powerData.push({time: currentTimeString, value: power});
-    //       this.idData.push({time: currentTimeString, value: id});
-    //       this.lngData.push({time: currentTimeString, value: lng});
-    //       this.latData.push({time: currentTimeString, value: lat});
-    //       this.timeData.push(currentTimeString);
-    //     }
-    //   }
-    // },
     /**
      * 数据处理
      */
     handleReceivedMessage(topic, message, packet) {
+
       // 解析 MQTT 消息
       const mqttData = JSON.parse(message.toString());
       // 去除空格并将十六进制字符串转换为十进制数字
       const decimalNumber = parseInt(mqttData.params.value.number.replace(/\s/g, ""), 16);
+      // 选项 deviceNameOption
+      const deviceNameOption = {
+        label: mqttData.params.value.device_name,
+        value: mqttData.params.value.device_name,
+      };
+      if (!this.DEVICE_NAME.some(option => option.value === deviceNameOption.value)) {
+        this.DEVICE_NAME.unshift(deviceNameOption);
+      }
+      // 选项areaOption
+      const areaOption = {
+        label: mqttData.params.value.area,
+        value: mqttData.params.value.area,
+      };
+      if (!this.AREA.some(option => option.value === areaOption.value)) {
+        this.AREA.unshift(areaOption);
+      }
+      // 选项numberOption
+      const numberOption = {
+        label: mqttData.params.value.number,
+        value: mqttData.params.value.number,
+      };
+      if (!this.NUMBER.some(option => option.value === numberOption.value)) {
+        this.NUMBER.unshift(numberOption);
+      }
       // 提取数据并添加到表格数据中
       const rowData = {
         uuid: mqttData.params.value.uuid,
@@ -533,6 +567,7 @@ export default {
         scene_no: mqttData.params.value.scene_no,
         light_mode: mqttData.params.value.light_mode,
         energy_dur: mqttData.params.value.energy_dur,
+        device_name: mqttData.params.value.device_name,
         power: mqttData.params.value.power,
         ConsumptionUpdate: "",
         current_bright: mqttData.params.value.current_bright,
