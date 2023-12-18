@@ -62,7 +62,7 @@
       :style="{ marginBottom: '8px' }"
     >
       <t-row>
-        <t-col :span="16">
+        <t-col>
           <t-row :gutter="[16, 24]">
             <t-col>
               <t-form-item label="灯控操作" name="status">
@@ -74,7 +74,7 @@
                   placeholder="请选择操作类型"
                 />
               </t-form-item>
-            </t-col>
+            </t-col >
             <t-col v-if="showSelect">
               <t-form-item label="网关" name="device_name">
                 <t-select
@@ -125,14 +125,13 @@
                 />
               </t-form-item>
             </t-col>
-            <t-col :flex="1">
+            <t-col>
               <t-button variant="base" @click="sendMqttMessage('setLightMode','常亮')">常亮</t-button>
               <t-button variant="base" @click="sendMqttMessage('setLightMode','常灭')">常灭</t-button>
               <t-button variant="base" @click="sendMqttMessage('blink','闪一闪')">闪一闪</t-button>
               <t-button variant="base" @click="sendMqttMessage('stopBlink','停止闪')">停止闪</t-button>
               <t-button variant="base" @click="sendMqttMessage('setLightMode','休眠')"> 休眠 </t-button>
-              <t-button variant="base"> 更多操作 </t-button>
-             </t-col>
+            </t-col>
           </t-row>
         </t-col>
       </t-row>
