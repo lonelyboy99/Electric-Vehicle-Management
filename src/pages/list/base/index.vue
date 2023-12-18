@@ -55,7 +55,7 @@ export default Vue.extend({
       prefix,
       dataLoading: false,
       receivedMessages: [],
-      selectedRowKeys: [1],
+      selectedRowKeys: [],
       value: 'first',
       tableData: [],
       columns: [
@@ -118,7 +118,7 @@ export default Vue.extend({
           colKey: 'customer',
         },
       ],
-      rowKey: 'index',
+      rowKey: 'UUID',
       tableLayout: 'auto',
       verticalAlign: 'middle',
       bordered: true,
