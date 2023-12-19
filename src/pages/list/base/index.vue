@@ -361,8 +361,17 @@ export default Vue.extend({
         // customer: "坤科节能",
         // 其他字段根据需要添加
       };
-      // 将数据添加到表格数据数组中
-      this.tableData.unshift(rowData);
+      // 检查tableData中是否已经存在相似的条目
+      const existingIndex = this.tableData.findIndex(item => item.uuid === rowData.uuid);
+      if (existingIndex !== -1) {
+        // 更新现有条目
+        this.$set(this.tableData, existingIndex, rowData);
+        console.log("有相同的数据")
+      } else {
+        // 将新条目添加到tableData
+        console.log("不同的数据 进行添加")
+        this.tableData.unshift(rowData);
+      }
       this.dataLoading = false;
     },
   },

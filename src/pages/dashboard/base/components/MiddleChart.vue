@@ -1,6 +1,6 @@
 <template>
   <t-row :gutter="[16, 16]">
-    <t-col :xs="12" :xl="12">
+    <t-col :xs="12" :xl="9">
       <t-card title="能耗趋势" subtitle="(Kw·h)" class="dashboard-chart-card" :bordered="false">
         <template #actions>
           <div class="dashboard-chart-title-container">
@@ -17,6 +17,15 @@
           id="monitorContainer"
           ref="monitorContainer"
           :style="{ width: '100%', height: `${resizeTime * 326}px` }"
+        ></div>
+      </t-card>
+    </t-col>
+    <t-col :xs="12" :xl="3">
+      <t-card title="能耗分布" :subtitle="currentMonth" class="dashboard-chart-card" :bordered="false">
+        <div
+          id="countContainer"
+          ref="countContainer"
+          :style="{ width: `${resizeTime * 326}px`, height: `${resizeTime * 326}px`, margin: '0 auto' }"
         ></div>
       </t-card>
     </t-col>
@@ -85,10 +94,10 @@ export default {
     },
     /** 资金走趋选择 */
     onCurrencyChange(checkedValues) {
-      const { chartColors } = this.$store.state.setting;
+      const {chartColors} = this.$store.state.setting;
 
       this.currentMonth = this.getThisMonth(checkedValues);
-      this.monitorChart.setOption(getLineChartDataSet({ dateTime: checkedValues, ...chartColors }));
+      this.monitorChart.setOption(getLineChartDataSet({dateTime: checkedValues, ...chartColors}));
     },
     updateContainer() {
       if (document.documentElement.clientWidth >= 1400 && document.documentElement.clientWidth < 1920) {
@@ -112,14 +121,14 @@ export default {
       });
     },
     renderCharts() {
-      const { chartColors } = this.$store.state.setting;
+      const {chartColors} = this.$store.state.setting;
 
       // 资金走势
       if (!this.monitorContainer) {
         this.monitorContainer = document.getElementById('monitorContainer');
       }
       this.monitorChart = echarts.init(this.monitorContainer);
-      this.monitorChart.setOption(getLineChartDataSet({ ...chartColors }));
+      this.monitorChart.setOption(getLineChartDataSet({...chartColors}));
 
       // 销售合同占比
       if (!this.countContainer) {

@@ -633,7 +633,7 @@ export function getPieChartDataSet({
     },
     series: [
       {
-        name: '销售渠道',
+        name: '能耗分布',
         type: 'pie',
         radius: ['48%', '60%'],
         avoidLabelOverlap: true,
@@ -687,9 +687,9 @@ export function getPieChartDataSet({
         data: [
           {
             value: 1048,
-            name: '线上',
+            name: '区域1',
           },
-          { value: radius * 7, name: '门店' },
+          { value: radius * 7, name: '区域2' },
         ],
       },
     ],

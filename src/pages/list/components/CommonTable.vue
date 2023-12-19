@@ -340,11 +340,15 @@ export default {
       }
       if (newStatus === '2' || newStatus === '3' || newStatus === '4'|| newStatus === '5') {
         // 如果选择了"区操作"，显示第二个下拉菜单并更新其选项
-        this.formData.code = 200;
         this.showSelect = true;
         this.showSelect1 = newStatus === '3';
         this.showSelect2 = newStatus === '4';
         this.showSelect3 = newStatus === '5';
+        if(newStatus === '3'){
+          this.formData.code = 100;
+        }else {
+          this.formData.code = 200;
+        }
       } else {
         this.showSelect = false;
         this.showSelect1 = newStatus === '3';
@@ -579,8 +583,17 @@ export default {
         time_dur: this.convertUnixTimestampToDateTime(mqttData.params.value.time_dur),
         customer: "坤科节能",
       };
-      // 将数据添加到表格数据数组中
-      this.tableData.unshift(rowData);
+      // 检查tableData中是否已经存在相似的条目
+      const existingIndex = this.tableData.findIndex(item => item.uuid === rowData.uuid);
+      if (existingIndex !== -1) {
+        // 更新现有条目
+        this.$set(this.tableData, existingIndex, rowData);
+        console.log("有相同的数据")
+      } else {
+        // 将新条目添加到tableData
+        console.log("不同的数据 进行添加")
+        this.tableData.unshift(rowData);
+      }
       this.dataLoading = false;
     },
   },

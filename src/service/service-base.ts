@@ -34,7 +34,6 @@ export const PANE_LIST: Array<DashboardPanel> = [
   {
     title: '总灯数',
     number: '100个',
-    upTrend: '10.5%',
     leftType: 'echarts-line',
   },
   {
@@ -191,12 +190,15 @@ export const PANE_LIST_DATA: Array<Gatewaydata> = [
  */
 export class MqttConnection {
   client: mqtt.MqttClient;
+  client1: mqtt.MqttClient;
   mqttConnectionStatus: string;
   receivedMessages: Array<any>;
   temperatureData: Array<{ time: string; value: string }> = [];
   humidityData: Array<{ time: string; value: string }> = [];
   lightingData: Array<{ time: string; value: string }> = [];
   powerData: Array<{ time: string; value: string }> = [];
+  tableData: Array<any> = [];
+
 
   constructor() {
     // 初始化类的属性
@@ -211,6 +213,7 @@ export class MqttConnection {
     this.initMqtt();
     setInterval(() => {
       this.updateNumber()
+
     }, 1000);
   }
 
@@ -225,8 +228,8 @@ export class MqttConnection {
     };
 
     // 连接成功
-    this.client = mqtt.connect('ws://122.51.210.27:8083/mqtt', options);
-
+    this.client = mqtt.connect('ws://106.15.121.181:8083/mqtt', options)
+    this.client1 = mqtt.connect('ws://122.51.210.27:8083/mqtt', options)
     this.client.on('connect', () => {
       this.mqttConnectionStatus = '已连接';
       console.log('连接成功');
@@ -258,7 +261,7 @@ export class MqttConnection {
    * MQTT订阅函数(订阅多个信息)
    */
   subscribes() {
-    const arr = ['online/emqx']
+    const arr = ['/sys/ibms_shgh_zm/gs08291110/thing/event/current/post', '/sys/ibms_shgh_zm/gs08291110/thing/event/consumption/post']
     this.client.subscribe(arr, {qos: 1}, (err) => {
       if (!err) {
         console.log(`主题为：“${arr}” 的消息订阅成功`)
@@ -266,8 +269,21 @@ export class MqttConnection {
         console.log('消息订阅失败')
       }
     })
+    const arr1 = ['led/emqx', 'temp_hum/emqx', 'online/emqx']
+    this.client1.subscribe(arr1, {qos: 1}, (err) => {
+      if (!err) {
+        console.log(`主题为：“${arr1}” 的消息订阅成功`)
+      } else {
+        console.log('消息订阅失败')
+      }
+    })
     // 在订阅成功后更新 receivedMessages 数组
     this.client.on('message', function (topic, message, packet) {
+      this.handleReceivedMessage(topic, message, packet);
+      console.log(`接收到消息，主题：${topic}, 消息：${message.toString()}`);
+    }.bind(this));
+
+    this.client1.on('message', function (topic, message, packet) {
       this.handleReceivedMessage(topic, message, packet);
       console.log(`接收到消息，主题：${topic}, 消息：${message.toString()}`);
     }.bind(this));
@@ -281,7 +297,6 @@ export class MqttConnection {
     if (messagesForTopic.length > 0) {
       const messageContent = JSON.parse(messagesForTopic[0].message)
       return messageContent[key] !== undefined ? messageContent[key] : 'N/A'
-
     } else {
       return 'N/A' // 如果没有匹配到消息，返回 "N/A"
     }
@@ -290,19 +305,54 @@ export class MqttConnection {
    * 数据处理
    */
   handleReceivedMessage(topic, message, packet) {
+    // 解析 MQTT 消息
+    const mqttData = JSON.parse(message.toString());
+
+    // 在访问 'params' 和 'value' 属性之前添加空值检查
+    const params = mqttData.params;
+    const value = params?.value;
+
+    // 将接收到的消息添加到 receivedMessages 数组中
     this.receivedMessages.unshift({
-      topic,
+      topic: topic,
       message: message.toString(),
-      qos: packet.qos,
-      time: new Date(),
+      packet: packet
     });
+
+    // 在访问 'value' 属性之前添加空值检查
+    if (value) {
+      const rowData = {
+        uuid: value.uuid,
+        area: value.area,
+        cluster: value.cluster,
+        number: value.number,
+        scene_no: value.scene_no,
+        light_mode: value.light_mode,
+        energy_dur: value.energy_dur,
+        device_name: value.device_name,
+        power: value.power,
+        ConsumptionUpdate: "",
+        current_bright: value.current_bright,
+        high_bright: value.high_bright,
+        standby_bright: value.standby_bright,
+        current_cct: value.current_cct,
+        delay_mode: value.delay_mode,
+        delay_time: value.delay_time,
+        delay_time2: value.delay_time2,
+        time_dur: value.time_dur,
+        customer: "坤科节能",
+      };
+      // 将数据添加到表格数据数组中
+      this.tableData.unshift(rowData);
+    }
   }
   updateNumber() {
-    PANE_LIST[3].number = this.mqttConnectionStatus;
     PANE_LIST_DATA[0].number = this.getLatestValueByTopic('online/emqx', 'temp');
     PANE_LIST_DATA[1].number = this.getLatestValueByTopic('online/emqx', 'hum');
     PANE_LIST_DATA[2].number = this.getLatestValueByTopic('online/emqx', 'light');
     PANE_LIST_DATA[3].number = this.getLatestValueByTopic('online/emqx', 'power');
+    PANE_LIST[3].number = this.mqttConnectionStatus;
+    PANE_LIST[0].number = this.tableData.length;
   }
 }
 

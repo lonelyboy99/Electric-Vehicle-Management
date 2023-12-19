@@ -4,7 +4,7 @@
       <t-card
         :bordered="false"
         :title="item.title"
-        :style="{ height: '168px' }"
+        :style="{ height: '140px' }"
         :class="{ 'dashboard-item': true, 'dashboard-item--main-color': index == 0 }"
       >
         <div class="dashboard-item-top">
@@ -30,20 +30,6 @@
             <file-icon />
           </span>
         </div>
-        <template #footer>
-          <div class="dashboard-item-bottom">
-            <div class="dashboard-item-block">
-              自从上周以来
-              <trend
-                class="dashboard-item-trend"
-                :type="item.upTrend ? 'up' : 'down'"
-                :is-reverse-color="index === 0"
-                :describe="item.upTrend || item.downTrend"
-              />
-            </div>
-            <chevron-right-icon />
-          </div>
-        </template>
       </t-card>
     </t-col>
   </t-row>
