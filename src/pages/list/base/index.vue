@@ -65,7 +65,7 @@ export default Vue.extend({
           align: 'left',
           width: 'auto',
           ellipsis: true,
-          colKey: 'UUID',
+          colKey: 'uuid',
           fixed: 'left',
         },
         {
@@ -118,7 +118,7 @@ export default Vue.extend({
           colKey: 'customer',
         },
       ],
-      rowKey: 'UUID',
+      rowKey: 'uuid',
       tableLayout: 'auto',
       verticalAlign: 'middle',
       bordered: true,
@@ -350,7 +350,7 @@ export default Vue.extend({
       const secondPart = numberParts[1]; // 获取 "5B"
       // 提取数据并添加到表格数据中
       const rowData = {
-        UUID: mqttData.params.value.uuid,
+        uuid: mqttData.params.value.uuid,
         area: mqttData.params.value.area,
         group: firstPart,
         mark: secondPart,
@@ -365,18 +365,6 @@ export default Vue.extend({
       this.tableData.unshift(rowData);
       this.dataLoading = false;
     },
-    // /**
-    //  * 数据处理
-    //  */
-    // handleReceivedMessage(topic, message, packet) {
-    //   this.receivedMessages.unshift({
-    //     topic,
-    //     message: message.toString(),
-    //     qos: packet.qos,
-    //     time: new Date(),
-    //   });
-    //
-    // },
   },
 });
 </script>

@@ -6,7 +6,7 @@
           <t-input v-model="filterText" @input="onInput" placeholder="请输入关键词">
             <search-icon slot="suffix-icon" size="20px" />
           </t-input>
-          <t-tree :data="items" hover expand-on-click-node :default-expanded="expanded" :filter="filterByText" />
+          <t-tree :data="items" hover="true" expand-on-click-node="true" :default-expanded="expanded" :filter="filterByText" />
         </div>
         <div class="list-tree-content">
           <common-table />
