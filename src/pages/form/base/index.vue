@@ -12,17 +12,9 @@
       <div class="form-basic-container">
         <div class="form-basic-item">
           <div class="form-basic-container-title">工单信息</div>
-          <!-- 表单内容 -->
-
-          <!-- 工单名称,工单类型 -->
           <t-row class="row-gap" :gutter="[16, 24]">
             <t-col :span="6">
-              <t-form-item label="客户姓名" name="name">
-                <t-input v-model="formData.name" :style="{ width: '322px' }" placeholder="请输入内容" />
-              </t-form-item>
-            </t-col>
-            <t-col :span="6">
-              <t-form-item label="客户电话" name="name">
+              <t-form-item label="客户信息" name="name">
                 <t-input v-model="formData.name" :style="{ width: '322px' }" placeholder="请输入内容" />
               </t-form-item>
             </t-col>
@@ -41,26 +33,13 @@
                 </t-select>
               </t-form-item>
             </t-col>
-
-            <!-- 工单收付类型 -->
-            <t-col :span="8">
-              <t-form-item label="工单收付类型" name="payment">
-                <t-radio-group v-model="formData.payment">
-                  <t-radio value="1"> 收款 </t-radio>
-                  <t-radio value="2"> 付款 </t-radio>
-                </t-radio-group>
-                <span class="space-item" />
-                <t-input placeholder="请输入金额" :style="{ width: '160px' }" />
-              </t-form-item>
-            </t-col>
-
             <t-col :span="6">
-              <t-form-item label="甲方" name="partyA">
+              <t-form-item label="优先级" name="type">
                 <t-select
-                  v-model="formData.partyA"
+                  v-model="formData.type"
                   :style="{ width: '322px' }"
-                  class="demo-select-base"
                   placeholder="请选择类型"
+                  class="demo-select-base"
                   clearable
                 >
                   <t-option v-for="(item, index) in partyAOptions" :key="index" :value="item.value" :label="item.label">
@@ -69,19 +48,16 @@
                 </t-select>
               </t-form-item>
             </t-col>
+
+            <!-- 工单收付类型 -->
             <t-col :span="6">
-              <t-form-item label="乙方" name="partyB">
-                <t-select
-                  v-model="formData.partyB"
-                  :style="{ width: '322px' }"
-                  placeholder="请选择类型"
-                  class="demo-select-base"
-                  clearable
-                >
-                  <t-option v-for="(item, index) in partyBOptions" :key="index" :value="item.value" :label="item.label">
-                    {{ item.label }}
-                  </t-option>
-                </t-select>
+              <t-form-item label="创建人" name="name">
+                <t-input v-model="formData.name" :style="{ width: '322px' }" placeholder="请输入内容" />
+              </t-form-item>
+            </t-col>
+            <t-col :span="6">
+              <t-form-item label="负责人" name="name">
+                <t-input v-model="formData.name" :style="{ width: '322px' }" placeholder="请输入内容" />
               </t-form-item>
             </t-col>
             <t-col :span="6">
@@ -135,20 +111,11 @@
           </t-row>
 
           <div class="form-basic-container-title form-title-gap">其它信息</div>
-
           <t-form-item label="备注" name="comment">
             <t-textarea v-model="formData.comment" :height="124" placeholder="请输入备注" />
           </t-form-item>
-          <t-form-item label="公证人">
-            <t-avatar-group>
-              <t-avatar>坤科</t-avatar>
-              <t-avatar>A</t-avatar>
-              <t-avatar>+</t-avatar>
-            </t-avatar-group>
-          </t-form-item>
         </div>
       </div>
-
       <div class="form-submit-container">
         <div class="form-submit-sub">
           <div class="form-submit-left">
@@ -197,28 +164,20 @@ export default {
       formData: { ...INITIAL_DATA },
       FORM_RULES,
       typeOptions: [
-        { label: '类型A', value: '1' },
-        { label: '类型B', value: '2' },
-        { label: '类型C', value: '3' },
+        { label: '维修', value: '1' },
+        { label: '服务', value: '2' },
+        { label: '安装', value: '3' },
       ],
       partyAOptions: [
-        { label: '公司A', value: '1' },
-        { label: '公司B', value: '2' },
-        { label: '公司C', value: '3' },
-      ],
-      partyBOptions: [
-        { label: '公司A', value: '1' },
-        { label: '公司B', value: '2' },
-        { label: '公司C', value: '3' },
+        { label: '紧急且重要', value: '1' },
+        { label: '高', value: '2' },
+        { label: '中', value: '3' },
+        { label: '低', value: '3' },
       ],
       textareaValue: '',
       rules: {
         name: [{ required: true, message: '请输入工单名称', type: 'error' }],
         type: [{ required: true, message: '请选择工单类型', type: 'error' }],
-        payment: [{ required: true, message: '请选择工单收付类型', type: 'error' }],
-        amount: [{ required: true, message: '请输入工单金额', type: 'error' }],
-        partyA: [{ required: true, message: '请选择甲方', type: 'error' }],
-        partyB: [{ required: true, message: '请选择乙方', type: 'error' }],
         signDate: [{ required: true, message: '请选择日期', type: 'error' }],
         startDate: [{ required: true, message: '请选择日期', type: 'error' }],
         endDate: [{ required: true, message: '请选择日期', type: 'error' }],
