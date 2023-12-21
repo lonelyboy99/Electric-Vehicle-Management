@@ -131,6 +131,7 @@
               <t-button variant="base" @click="sendMqttMessage('blink','闪一闪')">闪一闪</t-button>
               <t-button variant="base" @click="sendMqttMessage('stopBlink','停止闪')">停止闪</t-button>
               <t-button variant="base" @click="sendMqttMessage('setLightMode','休眠')"> 休眠 </t-button>
+              <t-button variant="base" @click="moreFunctions"> 更多功能 </t-button>
             </t-col>
           </t-row>
         </t-col>
@@ -163,12 +164,16 @@
         :onCancel="onCancel"
       >
       </t-dialog>
+      <t-dialog
+        header="更多功能"
+        :visible.sync="functionVisible"
+      >
+      </t-dialog>
     </div>
   </div>
 </template>
 <script>
 import { prefix } from '@/config/global';
-import Trend from '@/components/trend/index.vue';
 
 import {
   // DEVICE_NAME,
@@ -179,7 +184,6 @@ import mqtt from "mqtt";
 export default {
   name: 'list-table',
   components: {
-    Trend,
   },
   data() {
     return {
@@ -328,9 +332,22 @@ export default {
         total: 1000,
         defaultCurrent: 1,
       },
+      functionVisible: false,
       confirmVisible: false,
       deleteIdx: -1,
     };
+  },
+  computed: {
+    confirmBody() {
+      if (this.deleteIdx > -1) {
+        const { uuid } = this.tableData?.[this.deleteIdx];
+        return `删除后，${uuid}的所有信息将被清空，且无法恢复`;
+      }
+      return '';
+    },
+    offsetTop() {
+      return this.$store.state.setting.isUseTabsRouter ? 48 : 0;
+    },
   },
   watch:{
     'formData.status': function(newStatus) {
@@ -355,18 +372,6 @@ export default {
         this.showSelect2 = newStatus === '4';
         this.showSelect3 = newStatus === '5';
       }
-    },
-  },
-  computed: {
-    confirmBody() {
-      if (this.deleteIdx > -1) {
-        const { uuid } = this.tableData?.[this.deleteIdx];
-        return `删除后，${uuid}的所有信息将被清空，且无法恢复`;
-      }
-      return '';
-    },
-    offsetTop() {
-      return this.$store.state.setting.isUseTabsRouter ? 48 : 0;
     },
   },
   mounted() {
@@ -403,6 +408,9 @@ export default {
     handleClickDelete(row) {
       this.deleteIdx = row.rowIndex;
       this.confirmVisible = true;
+    },
+    moreFunctions(row) {
+      this.functionVisible = true;
     },
     onConfirmDelete() {
       // 真实业务请发起请求
@@ -531,7 +539,7 @@ export default {
     /**
      * 数据处理
      */
-    handleReceivedMessage(topic, message, packet) {
+    handleReceivedMessage(topic, message) {
 
       // 解析 MQTT 消息
       const mqttData = JSON.parse(message.toString());
