@@ -11,7 +11,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // MySQL Connection
-const pool = mysql.createPool({
+const db = mysql.createConnection({
   connectionLimit: 10,
   host: '122.51.210.27',
   port: '3306',
@@ -20,7 +20,7 @@ const pool = mysql.createPool({
   database: '数据',
 });
 
-pool.connect((err) => {
+db.connect((err) => {
   if (err) {
     console.log(err);
   } else {
@@ -33,7 +33,7 @@ pool.connect((err) => {
 // Create
 app.post('/api/items', (req, res) => {
   const { data } = req.body;
-  pool.query('INSERT INTO temp_hum SET ?', data, (err, result) => {
+  db.query('INSERT INTO temp_hum SET ?', data, (err, result) => {
     if (err) throw err;
     res.send('Item added to database');
   });
@@ -45,7 +45,7 @@ let cachedData = null;
 // Function to fetch data from the database
 const fetchDataFromDatabase = () => {
   return new Promise((resolve, reject) => {
-    pool.query('SELECT * FROM temp_hum', (err, result) => {
+    db.query('SELECT * FROM temp_hum', (err, result) => {
       if (err) {
         reject(err);
       } else {
@@ -76,7 +76,7 @@ app.get('/api/items', (req, res) => {
 app.put('/api/items/:id', (req, res) => {
   const { id } = req.params;
   const { data } = req.body;
-  pool.query('UPDATE temp_hum SET ? WHERE id = ?', [data, id], (err, result) => {
+  db.query('UPDATE temp_hum SET ? WHERE id = ?', [data, id], (err, result) => {
     if (err) throw err;
     res.send('Item updated');
   });
@@ -85,7 +85,7 @@ app.put('/api/items/:id', (req, res) => {
 // Delete
 app.delete('/api/items/:id', (req, res) => {
   const { id } = req.params;
-  pool.query('DELETE FROM temp_hum WHERE id = ?', id, (err, result) => {
+  db.query('DELETE FROM temp_hum WHERE id = ?', id, (err, result) => {
     if (err) throw err;
     res.send('Item deleted');
   });

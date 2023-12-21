@@ -15,7 +15,13 @@
         :headerAffixProps="{ offsetTop, container: getContainer }"
       >
         <template #op="slotProps">
-          <a class="t-button-link" @click="handleDelete(slotProps.row)">删除</a>
+          <t-popconfirm theme="danger"
+                        content="确认删除工单吗"
+                        :on-confirm="() => handleDelete(slotProps.row)"
+                        :popupProps="{ placement: 'right' }"
+          >
+          <a class="t-button-link">删除</a>
+          </t-popconfirm>
         </template>
       </t-table>
     </div>
@@ -28,6 +34,7 @@ import axios from 'axios'; // 导入 Axios 库
 
 export default {
   name: 'list-table',
+  visible: true,
   components: {
     Trend,
   },
@@ -52,7 +59,7 @@ export default {
         {
           title: '创建日期',
           align: 'center',
-          width: 400,
+          width: 200,
           ellipsis: true,
           colKey: 'up_timestamp',
         },
@@ -64,43 +71,43 @@ export default {
         },
         {
           title: '状态',
-          width: 'auto',
+          width: 80,
           ellipsis: true,
           colKey: 'temp',
         },
         {
           title: '优先级',
-          width: 'auto',
+          width: 80,
           ellipsis: true,
           colKey: 'hum',
         },
         {
           title: '客户信息',
-          width: 'auto',
+          width: 100,
           ellipsis: true,
           colKey: 'light',
         },
         {
           title: '工单类型',
-          width: 'auto',
+          width: 100,
           ellipsis: true,
           colKey: 'power',
         },
         {
           title: '负责人',
-          width: 'auto',
+          width: 100,
           ellipsis: true,
           colKey: 'LED',
         },
         {
           title: '预计完成日期',
-          width: 'auto',
+          width: 200,
           ellipsis: true,
           colKey: 'lng',
         },
         {
           title: '备注',
-          width: 'auto',
+          width: 300,
           ellipsis: true,
           colKey: 'lat',
         },
@@ -189,6 +196,7 @@ export default {
     },
 
     handleDelete(row) {
+      console.log('正在删除行:', row);
       // 处理删除操作
       const { id } = row;
       this.deleteItem(id);
