@@ -7,12 +7,15 @@ const mysql = require('mysql');
 const app = express();
 const port = 3002;
 
+// Define table name as a constant
+const TABLE_NAME = 'work_order';
+
 app.use(cors());
 app.use(bodyParser.json());
 
 // MySQL Connection
 const db = mysql.createConnection({
-  connectionLimit: 10,
+  max_connections: 1000,
   host: '122.51.210.27',
   port: '3306',
   user: '1',
@@ -24,7 +27,7 @@ db.connect((err) => {
   if (err) {
     console.log(err);
   } else {
-    console.log('MySQL connected');
+    console.log('MySQL数据库已连接');
   }
 });
 
@@ -33,19 +36,16 @@ db.connect((err) => {
 // Create
 app.post('/api/items', (req, res) => {
   const { data } = req.body;
-  db.query('INSERT INTO temp_hum SET ?', data, (err, result) => {
+  db.query(`INSERT INTO ${TABLE_NAME} SET ?`, data, (err, result) => {
     if (err) throw err;
-    res.send('Item added to database');
+    res.send('工单创建成功');
   });
 });
-
-
-let cachedData = null;
 
 // Function to fetch data from the database
 const fetchDataFromDatabase = () => {
   return new Promise((resolve, reject) => {
-    db.query('SELECT * FROM temp_hum', (err, result) => {
+    db.query(`SELECT * FROM ${TABLE_NAME}`, (err, result) => {
       if (err) {
         reject(err);
       } else {
@@ -54,15 +54,16 @@ const fetchDataFromDatabase = () => {
     });
   });
 };
+
 // Schedule periodic data update (every 5 seconds in this example)
+let cachedData = null;
 setInterval(async () => {
   try {
     cachedData = await fetchDataFromDatabase();
-    console.log('Data updated');
   } catch (error) {
     console.error('Error updating data', error);
   }
-}, 5000);
+}, 1000);
 
 // Read
 app.get('/api/items', (req, res) => {
@@ -72,11 +73,12 @@ app.get('/api/items', (req, res) => {
     res.status(500).send('Error fetching data');
   }
 });
+
 // Update
 app.put('/api/items/:id', (req, res) => {
   const { id } = req.params;
   const { data } = req.body;
-  db.query('UPDATE temp_hum SET ? WHERE id = ?', [data, id], (err, result) => {
+  db.query(`UPDATE ${TABLE_NAME} SET ? WHERE id = ?`, [data, id], (err, result) => {
     if (err) throw err;
     res.send('Item updated');
   });
@@ -85,7 +87,7 @@ app.put('/api/items/:id', (req, res) => {
 // Delete
 app.delete('/api/items/:id', (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM temp_hum WHERE id = ?', id, (err, result) => {
+  db.query(`DELETE FROM ${TABLE_NAME} WHERE id = ?`, id, (err, result) => {
     if (err) throw err;
     res.send('Item deleted');
   });

@@ -50,8 +50,7 @@ export default {
         {colKey: 'row-select', type: 'multiple', width: 20, fixed: 'left'},
         {
           title: '工单号',
-          align: 'left',
-          width: 80,
+          width: 315,
           ellipsis: true,
           colKey: 'id',
           fixed: 'left',
@@ -59,62 +58,62 @@ export default {
         {
           title: '创建日期',
           align: 'center',
-          width: 200,
+          width: 150,
           ellipsis: true,
-          colKey: 'up_timestamp',
+          colKey: 'build_date',
         },
         {
           title: '创建人',
-          width: 150,
+          width: 80,
           ellipsis: true,
-          colKey: 'client_id',
+          colKey: 'build_man',
         },
         {
           title: '状态',
           width: 80,
           ellipsis: true,
-          colKey: 'temp',
+          colKey: 'state',
         },
         {
           title: '优先级',
-          width: 80,
+          width: 110,
           ellipsis: true,
-          colKey: 'hum',
+          colKey: 'priority',
         },
         {
           title: '客户信息',
-          width: 100,
+          width: 160,
           ellipsis: true,
-          colKey: 'light',
+          colKey: 'customer',
         },
         {
           title: '工单类型',
           width: 100,
           ellipsis: true,
-          colKey: 'power',
+          colKey: 'type',
         },
         {
           title: '负责人',
           width: 100,
           ellipsis: true,
-          colKey: 'LED',
+          colKey: 'head',
         },
         {
           title: '预计完成日期',
-          width: 200,
+          width: 150,
           ellipsis: true,
-          colKey: 'lng',
+          colKey: 'fin_date',
         },
         {
           title: '备注',
           width: 300,
           ellipsis: true,
-          colKey: 'lat',
+          colKey: 'notes',
         },
         {
           align: 'left',
           fixed: 'right',
-          width: 200,
+          width: 150,
           colKey: 'op',
           title: '操作',
         },
@@ -145,7 +144,7 @@ export default {
     this.fetchData();
     setInterval(() => {
       this.fetchData();
-    }, 5000);
+    }, 1000);
   },
   methods: {
     async fetchData() {
@@ -154,7 +153,14 @@ export default {
         this.data = response.data;
         // 遍历 data 数组，格式化 up_timestamp 字段
         this.data.forEach(item => {
-          item.up_timestamp = this.formatTimestamp(item.up_timestamp);
+          item.build_date = this.formatTimestamp(item.build_date);
+          item.fin_date = this.formatTimestamp(item.fin_date);
+        });
+        // 按照 build_date 字段倒序排列
+        this.data.sort((a, b) => {
+          const dateA = new Date(a.build_date).getTime();
+          const dateB = new Date(b.build_date).getTime();
+          return dateB - dateA;
         });
         this.pagination.total = this.data.length; // 更新 total 属性
         this.dataLoading= false;
@@ -184,7 +190,7 @@ export default {
     async deleteItem(id) {
       try {
         await axios.delete(`http://localhost:3002/api/items/${id}`);
-        await this.fetchData();
+        this.fetchData();
         console.log('工单删除成功', id);
       } catch (error) {
         console.error('Error deleting item', error);
@@ -206,10 +212,7 @@ export default {
       const year = date.getFullYear();
       const month = (date.getMonth() + 1).toString().padStart(2, '0');
       const day = date.getDate().toString().padStart(2, '0');
-      const hours = date.getHours().toString().padStart(2, '0');
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      const seconds = date.getSeconds().toString().padStart(2, '0');
-      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      return `${year}-${month}-${day}`;
     },
     getContainer() {
       return document.querySelector('.tdesign-starter-layout');

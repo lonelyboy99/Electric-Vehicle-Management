@@ -14,8 +14,8 @@
           <div class="form-basic-container-title">工单信息</div>
           <t-row class="row-gap" :gutter="[16, 24]">
             <t-col :span="6">
-              <t-form-item label="客户信息" name="name">
-                <t-input v-model="formData.name" :style="{ width: '322px' }" placeholder="请输入内容" />
+              <t-form-item label="客户信息" name="customer">
+                <t-input v-model="formData.customer" :style="{ width: '322px' }" placeholder="请输入内容" />
               </t-form-item>
             </t-col>
             <t-col :span="6">
@@ -36,7 +36,7 @@
             <t-col :span="6">
               <t-form-item label="优先级" name="type">
                 <t-select
-                  v-model="formData.type"
+                  v-model="formData.priority"
                   :style="{ width: '322px' }"
                   placeholder="请选择类型"
                   class="demo-select-base"
@@ -51,19 +51,19 @@
 
             <!-- 工单收付类型 -->
             <t-col :span="6">
-              <t-form-item label="创建人" name="name">
-                <t-input v-model="formData.name" :style="{ width: '322px' }" placeholder="请输入内容" />
+              <t-form-item label="创建人" name="build_man">
+                <t-input v-model="formData.build_man" :style="{ width: '322px' }" placeholder="请输入内容" />
               </t-form-item>
             </t-col>
             <t-col :span="6">
-              <t-form-item label="负责人" name="name">
-                <t-input v-model="formData.name" :style="{ width: '322px' }" placeholder="请输入内容" />
+              <t-form-item label="负责人" name="head">
+                <t-input v-model="formData.head" :style="{ width: '322px' }" placeholder="请输入内容" />
               </t-form-item>
             </t-col>
             <t-col :span="6">
-              <t-form-item label="工单签订日期" name="signDate">
+              <t-form-item label="工单签订日期" name="build_date">
                 <t-date-picker
-                  v-model="formData.signDate"
+                  v-model="formData.build_date"
                   :style="{ width: '322px' }"
                   theme="primary"
                   mode="date"
@@ -72,20 +72,9 @@
               </t-form-item>
             </t-col>
             <t-col :span="6">
-              <t-form-item label="工单生效日期" name="startDate">
+              <t-form-item label="工单结束日期" name="fin_date">
                 <t-date-picker
-                  v-model="formData.startDate"
-                  :style="{ width: '322px' }"
-                  theme="primary"
-                  mode="date"
-                  separator="/"
-                />
-              </t-form-item>
-            </t-col>
-            <t-col :span="6">
-              <t-form-item label="工单结束日期" name="endDate">
-                <t-date-picker
-                  v-model="formData.endDate"
+                  v-model="formData.fin_date"
                   :style="{ width: '322px' }"
                   theme="primary"
                   mode="date"
@@ -111,8 +100,8 @@
           </t-row>
 
           <div class="form-basic-container-title form-title-gap">其它信息</div>
-          <t-form-item label="备注" name="comment">
-            <t-textarea v-model="formData.comment" :height="124" placeholder="请输入备注" />
+          <t-form-item label="备注" name="notes">
+            <t-textarea v-model="formData.notes" :height="124" placeholder="请输入备注" />
           </t-form-item>
         </div>
       </div>
@@ -129,29 +118,24 @@
 </template>
 <script>
 import { prefix } from '@/config/global';
+import axios from "axios";
+import { v4 as uuidv4 } from 'uuid';
 
 const INITIAL_DATA = {
-  name: '',
+  customer: '',
+  build_man: '',
+  build_date: '',
+  fin_date: '',
+  priority: '',
   type: '',
-  partyA: '',
-  partyB: '',
-  signDate: '',
-  startDate: '',
-  endDate: '',
-  payment: '1',
-  amount: 0,
-  comment: '',
+  head: '',
+  notes: '',
   files: [],
 };
 const FORM_RULES = {
   name: [{ required: true, message: '请输入工单名称', type: 'error' }],
   type: [{ required: true, message: '请选择工单类型', type: 'error' }],
-  payment: [{ required: true, message: '请选择工单收付类型', type: 'error' }],
-  amount: [{ required: true, message: '请输入工单金额', type: 'error' }],
-  partyA: [{ required: true, message: '请选择甲方', type: 'error' }],
-  partyB: [{ required: true, message: '请选择乙方', type: 'error' }],
   signDate: [{ required: true, message: '请选择日期', type: 'error' }],
-  startDate: [{ required: true, message: '请选择日期', type: 'error' }],
   endDate: [{ required: true, message: '请选择日期', type: 'error' }],
 };
 
@@ -164,17 +148,16 @@ export default {
       formData: { ...INITIAL_DATA },
       FORM_RULES,
       typeOptions: [
-        { label: '维修', value: '1' },
-        { label: '服务', value: '2' },
-        { label: '安装', value: '3' },
+        { label: '维修', value: '维修' },
+        { label: '服务', value: '服务' },
+        { label: '安装', value: '安装' },
       ],
       partyAOptions: [
-        { label: '紧急且重要', value: '1' },
-        { label: '高', value: '2' },
-        { label: '中', value: '3' },
-        { label: '低', value: '3' },
+        { label: '紧急且重要', value: '紧急且重要' },
+        { label: '高', value: '高' },
+        { label: '中', value: '中' },
+        { label: '低', value: '低' },
       ],
-      textareaValue: '',
       rules: {
         name: [{ required: true, message: '请输入工单名称', type: 'error' }],
         type: [{ required: true, message: '请选择工单类型', type: 'error' }],
@@ -205,11 +188,42 @@ export default {
     onReset() {
       this.$message.warning('取消新建');
     },
-    onSubmit({ validateResult }) {
+    async onSubmit({ validateResult }) {
+      console.log("工单创建函数触发")
       if (validateResult === true) {
-        this.$message.success('新建成功');
+        try {
+          // 使用 uuid 生成符合指定格式的 id
+          const id = uuidv4();
+          console.log(id)
+          // 从 formData 中提取相关数据
+          const { customer, build_man, build_date, fin_date, priority, type, head, notes } = this.formData;
+
+          // 准备要发送到请求体中的数据对象
+          const dataToCreate = {
+            id: id,
+            customer: customer,
+            build_man: build_man,
+            build_date: build_date,
+            fin_date: fin_date,
+            priority: priority,
+            type: type,
+            head: head,
+            notes: notes,
+            // 根据你的数据结构添加更多属性
+          };
+          console.log(dataToCreate);
+          // 发送创建项目的 HTTP 请求
+          const response = await axios.post(`http://localhost:3002/api/items`, { data: dataToCreate });
+
+          // 处理响应，显示成功消息等
+          this.$message.success(response.data);
+
+        } catch (error) {
+          // 处理错误，显示错误消息等
+          this.$message.error('创建项目时发生错误');
+        }
       }
-    },
+    }
   },
 };
 </script>
