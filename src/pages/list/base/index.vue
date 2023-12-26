@@ -1,40 +1,43 @@
 <template>
   <div>
-    <t-card class="list-card-container" :bordered="false">
-      <t-row justify="space-between">
-        <div class="left-operation-container">
-          <t-button variant="base" @click="handleNav('/list/tree')"> 操作配置</t-button>
-          <p v-if="!!selectedRowKeys.length" class="selected-count">已选{{ selectedRowKeys.length }}项</p>
-        </div>
-      </t-row>
-
+    <t-card :bordered="false" class="list-card-container">
+      <t-form>
+        <t-row justify="space-between">
+          <t-col>
+            <t-form-item label="项目选择" name="status">
+              <t-select
+                v-model="selectedProject"
+                :options="PROJECT_SELECTION"
+                class="form-item-content"
+                placeholder="请选择操作类型"
+                @change="handleSelectChange"
+              />
+            </t-form-item>
+          </t-col>
+          <t-col>
+            <t-button style="margin-right:1400px" variant="base" @click="handleNav('/list/tree')"> 操作配置</t-button>
+          </t-col>
+        </t-row>
+      </t-form>
       <div class="table-container">
         <t-table
           :columns="columns"
-          :data="tableData"
-          :rowKey="rowKey"
-          :verticalAlign="verticalAlign"
-          :hover="hover"
-          :pagination="pagination"
-          :selected-row-keys="selectedRowKeys"
-          :loading="dataLoading"
-          @page-change="rehandlePageChange"
-          @change="rehandleChange"
-          @select-change="rehandleSelectChange"
-          :headerAffixedTop="true"
+          :data="data"
           :headerAffixProps="{ offsetTop: offsetTop, container: getContainer }"
+          :headerAffixedTop="true"
+          :hover="hover"
+          :loading="dataLoading"
+          :pagination="pagination"
+          :row-key="rowKey"
+          :selected-row-keys="selectedRowKeys"
+          :verticalAlign="verticalAlign"
+          @change="rehandleChange"
+          @page-change="rehandlePageChange"
+          @select-change="rehandleSelectChange"
         >
         </t-table>
       </div>
     </t-card>
-    <t-dialog
-      header="确认删除当前所选灯具信息？"
-      :body="confirmBody"
-      :visible.sync="confirmVisible"
-      @confirm="onConfirmDelete"
-      :onCancel="onCancel"
-    >
-    </t-dialog>
   </div>
 </template>
 <script lang="ts">
@@ -42,7 +45,8 @@ import Vue from 'vue';
 import {SearchIcon} from 'tdesign-icons-vue';
 import Trend from '@/components/trend/index.vue';
 import {prefix} from '@/config/global';
-import mqtt from 'mqtt';
+import axios from "axios";
+import {PROJECT_SELECTION,} from '@/constants';
 
 export default Vue.extend({
   name: 'ListBase',
@@ -52,14 +56,15 @@ export default Vue.extend({
   },
   data() {
     return {
+      selectedProject: '',
+      PROJECT_SELECTION,
       prefix,
       dataLoading: false,
       receivedMessages: [],
       selectedRowKeys: [],
       value: 'first',
-      tableData: [],
+      data: [],
       columns: [
-        {colKey: 'row-select', type: 'multiple', width: 20, fixed: 'left'},
         {
           title: 'UUID',
           align: 'left',
@@ -78,19 +83,19 @@ export default Vue.extend({
           title: '组',
           width: 'auto',
           ellipsis: true,
-          colKey: 'group',
+          colKey: 'cluster',
         },
         {
           title: '号',
           width: 'auto',
           ellipsis: true,
-          colKey: 'mark',
+          colKey: 'number',
         },
         {
           title: '网关',
           width: 'auto',
           ellipsis: true,
-          colKey: 'gateway',
+          colKey: 'device_name',
         },
         {
           title: '区域位置',
@@ -126,8 +131,8 @@ export default Vue.extend({
       rowClassName: (rowKey: string) => `${rowKey}-class`,
       // 与pagination对齐
       pagination: {
-        defaultPageSize: 20,
-        total: 100,
+        defaultPageSize: 10,
+        total: 1,
         defaultCurrent: 1,
       },
       searchValue: '',
@@ -136,28 +141,56 @@ export default Vue.extend({
     };
   },
   computed: {
-    confirmBody() {
-      if (this.deleteIdx > -1) {
-        const {UUID} = this.tableData?.[this.deleteIdx];
-        return `删除后，${UUID}的所有信息将被清空，且无法恢复`;
-      }
-      return '';
-    },
     offsetTop() {
       return this.$store.state.setting.isUseTabsRouter ? 48 : 0;
     },
   },
   mounted() {
     this.dataLoading = true;
-    this.initMqtt();
-    this.updateChartData();
-    setInterval(() => {
-      this.updateChartData();
-      this.pagination.total = this.tableData.length;
-    }, 100);
+    this.fetchData();
+    // setInterval(() => {
+    //   this.fetchData();
+    // }, 1000);
   },
 
   methods: {
+    async fetchData() {
+      try {
+        let params = {};
+        // 如果选中的项目不是 '全部项目'，则设置筛选参数
+        if (this.selectedProject !== '全部项目') {
+          params = {
+            project: this.selectedProject, // 使用选定的项目值
+          };
+        }
+
+        // 使用筛选参数进行API请求
+        const response = await axios.get('http://localhost:3002/api/light_data/items', {params});
+
+        // 使用筛选后的结果更新组件数据
+        this.data = response.data;
+
+        // 对数据进行排序（如果需要的话）
+        this.data.sort((a, b) => {
+          const clusterA = parseInt(a.cluster);
+          const clusterB = parseInt(b.cluster);
+          return clusterA - clusterB;
+        });
+
+        // 更新分页的total属性
+        this.pagination.total = this.data.length;
+
+        // 将数据加载状态设为false
+        this.dataLoading = false;
+      } catch (error) {
+        console.error('获取数据时出错', error);
+      }
+    },
+    handleSelectChange() {
+      // 在项目选择更改时触发数据获取
+      this.dataLoading = true;
+      this.fetchData();
+    },
     getContainer() {
       return document.querySelector('.tdesign-starter-layout');
     },
@@ -180,18 +213,6 @@ export default Vue.extend({
       this.deleteIdx = row.rowIndex;
       this.confirmVisible = true;
     },
-    onConfirmDelete() {
-      // 真实业务请发起请求
-      this.tableData.splice(this.deleteIdx, 1);
-      this.pagination.total = this.tableData.length;
-      const selectedIdx = this.selectedRowKeys.indexOf(this.deleteIdx);
-      if (selectedIdx > -1) {
-        this.selectedRowKeys.splice(selectedIdx, 1);
-      }
-      this.confirmVisible = false;
-      this.$message.success('删除成功');
-      this.resetIdx();
-    },
     onCancel() {
       this.resetIdx();
     },
@@ -200,179 +221,6 @@ export default Vue.extend({
     },
     handleNav(url) {
       this.$router.push(url);
-    },
-
-    /**
-     * MQTT连接函数
-     */
-    initMqtt() {
-      // 连接配置选项
-      let options = {
-        connectTimeout: 4000, // 超时时间
-        clientId: '', // 不填默认随机生成一个ID
-      }
-      this.client = mqtt.connect('ws://106.15.121.181:8083/mqtt', options)
-      this.client1 = mqtt.connect('ws://122.51.210.27:8083/mqtt', options)
-
-      // 连接成功
-      this.client.on('connect', () => {
-        this.mqttConnectionStatus = '已连接';
-        console.log('连接成功');
-
-        // 连接成功后订阅消息
-        this.subscribes();
-      });
-
-      // 重连提醒
-      this.client.on('reconnect', () => {
-        this.mqttConnectionStatus = '正在重连';
-        console.log('正在重连');
-      });
-
-      // 连接失败提醒
-      this.client.on('error', (error) => {
-        this.mqttConnectionStatus = '连接失败';
-        console.log('连接失败', error);
-      });
-    },
-
-    /**
-     * MQTT订阅函数(订阅多个信息)
-     */
-    subscribes() {
-      const arr = ['/sys/ibms_shgh_zm/gs08291110/thing/event/current/post', '/sys/ibms_shgh_zm/gs08291110/thing/event/consumption/post']
-      this.client.subscribe(arr, {qos: 1}, (err) => {
-        if (!err) {
-          console.log(`主题为：“${arr}” 的消息订阅成功`)
-        } else {
-          console.log('消息订阅失败')
-        }
-      })
-      const arr1 = ['led/emqx', 'temp_hum/emqx']
-      this.client1.subscribe(arr1, {qos: 1}, (err) => {
-        if (!err) {
-          console.log(`主题为：“${arr1}” 的消息订阅成功`)
-        } else {
-          console.log('消息订阅失败')
-        }
-      })
-      // 在订阅成功后更新 receivedMessages 数组
-      this.client.on('message', function (topic, message, packet) {
-        this.handleReceivedMessage(topic, message, packet);
-        console.log(`接收到消息，主题：${topic}, 消息：${message.toString()}`);
-      }.bind(this));
-
-      this.client1.on('message', function (topic, message, packet) {
-        this.handleReceivedMessage(topic, message, packet);
-        console.log(`接收到消息，主题：${topic}, 消息：${message.toString()}`);
-      }.bind(this));
-    },
-
-    /**
-     * MQTT发布信息
-     */
-    publish(topic, message) {
-      if (!this.client.connected) {
-        console.log('客户端未连接')
-        return
-      }
-      this.client.publish(topic, message, {qos: 0}, (err) => {
-        if (!err) {
-          console.log(`主题为：${topic},内容为：${message} 发布成功`)
-        }
-      })
-    },
-
-    /**
-     * 从订阅主题消息中获取相应键值数据
-     */
-    getLatestValueByTopic(topic, key) {
-      const messagesForTopic = this.receivedMessages.filter(message => message.topic === topic)
-      if (messagesForTopic.length > 0) {
-        const messageContent = JSON.parse(messagesForTopic[0].message)
-        return messageContent[key] !== undefined ? messageContent[key] : 'N/A'
-      } else {
-        return 'N/A' // 如果没有匹配到消息，返回 "N/A"
-      }
-    },
-
-    /**
-     * 更新数据数组
-     */
-    updateChartData() {
-      const temperature = this.getLatestValueByTopic('temp_hum/emqx', 'temp');
-      const humidity = this.getLatestValueByTopic('temp_hum/emqx', 'hum');
-      const light = this.getLatestValueByTopic('temp_hum/emqx', 'light');
-      const power = this.getLatestValueByTopic('temp_hum/emqx', 'power');
-      const id = this.getLatestValueByTopic('temp_hum/emqx', 'id');
-      const lng = this.getLatestValueByTopic('temp_hum/emqx', 'lng');
-      const lat = this.getLatestValueByTopic('temp_hum/emqx', 'lat');
-
-      // 判断是否要添加数据
-      if (temperature !== 'N/A' && humidity !== 'N/A' && light !== 'N/A' && power !== 'N/A') {
-        const currentTime = new Date();
-        const currentTimeString = currentTime.toISOString();
-
-        // 删除旧数据
-        this.temperatureData = this.temperatureData.slice(-10);
-        this.humidityData = this.humidityData.slice(-10);
-        this.lightingData = this.lightingData.slice(-10);
-        this.powerData = this.powerData.slice(-10);
-        this.idData = this.idData.slice(-10);
-        this.lngData = this.lngData.slice(-10);
-        this.latData = this.latData.slice(-10);
-
-        // 判断是否是新数据
-        if (!this.temperatureData.length || this.temperatureData[0].time !== currentTimeString) {
-          // 添加新数据
-          this.temperatureData.push({time: currentTimeString, value: temperature});
-          this.humidityData.push({time: currentTimeString, value: humidity});
-          this.lightingData.push({time: currentTimeString, value: light});
-          this.powerData.push({time: currentTimeString, value: power});
-          this.idData.push({time: currentTimeString, value: id});
-          this.lngData.push({time: currentTimeString, value: lng});
-          this.latData.push({time: currentTimeString, value: lat});
-          this.timeData.push(currentTimeString);
-        }
-      }
-    },
-    /**
-     * 数据处理
-     */
-    handleReceivedMessage(topic, message, packet) {
-      // 解析 MQTT 消息
-      const mqttData = JSON.parse(message.toString());
-      // 分割 number 字符串
-      const numberParts = mqttData.params.value.number.split(' ');
-      // 提取你需要的部分
-      const firstPart = numberParts[0];
-      // 提取你需要的部分
-      const secondPart = numberParts[1]; // 获取 "5B"
-      // 提取数据并添加到表格数据中
-      const rowData = {
-        uuid: mqttData.params.value.uuid,
-        area: mqttData.params.value.area,
-        group: firstPart,
-        mark: secondPart,
-        gateway: mqttData.params.value.device_name,
-        // location: mqttData.params.value.current_bright,
-        // account: mqttData.params.value.current_cct,
-        // username: mqttData.params.value.power,
-        // customer: "坤科节能",
-        // 其他字段根据需要添加
-      };
-      // 检查tableData中是否已经存在相似的条目
-      const existingIndex = this.tableData.findIndex(item => item.uuid === rowData.uuid);
-      if (existingIndex !== -1) {
-        // 更新现有条目
-        this.$set(this.tableData, existingIndex, rowData);
-        console.log("有相同的数据")
-      } else {
-        // 将新条目添加到tableData
-        console.log("不同的数据 进行添加")
-        this.tableData.unshift(rowData);
-      }
-      this.dataLoading = false;
     },
   },
 });

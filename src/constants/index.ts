@@ -15,3 +15,9 @@ export const LIGHT_CONTROL: Array<IOption> = [
   { value: '4', label: '群组操作' },
   { value: '5', label: '标签操作' },
 ];
+export const PROJECT_SELECTION: Array<IOption> = [
+  { value: '全部项目', label: '全部项目' },
+  { value: '景枫', label: '景枫' },
+  { value: '南邮', label: '南邮' },
+  { value: 'xx', label: 'xx' },
+];

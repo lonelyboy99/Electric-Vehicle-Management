@@ -54,20 +54,6 @@ export default {
             {
               label: '景枫',
               value: '1-1',
-              children: [
-                {
-                  label: '灯组',
-                  value: '1-1-0',
-                },
-                {
-                  label: '网关',
-                  value: '1-1-1',
-                },
-                {
-                  label: '设备位置',
-                  value: '1-1-1',
-                },
-              ],
             },
           ],
         },
@@ -82,20 +68,6 @@ export default {
             {
               label: 'xx',
               value: '2-1',
-              children: [
-                {
-                  label: '灯组',
-                  value: '2-1-0',
-                },
-                {
-                  label: '网关',
-                  value: '2-1-1',
-                },
-                {
-                  label: '设备位置',
-                  value: '2-1-1',
-                },
-              ],
             },
           ],
         },
@@ -110,20 +82,6 @@ export default {
             {
               label: 'xx',
               value: '3-1',
-              children: [
-                {
-                  label: '灯组',
-                  value: '2-1-0',
-                },
-                {
-                  label: '网关',
-                  value: '2-1-1',
-                },
-                {
-                  label: '设备位置',
-                  value: '2-1-1',
-                },
-              ],
             },
           ],
         },

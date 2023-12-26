@@ -141,6 +141,7 @@ export default {
     },
   },
   mounted() {
+    this.dataLoading= true;
     this.fetchData();
     setInterval(() => {
       this.fetchData();
@@ -149,7 +150,7 @@ export default {
   methods: {
     async fetchData() {
       try {
-        const response = await axios.get('http://localhost:3002/api/items');
+        const response = await axios.get('http://localhost:3002/api/work_order/items');
         this.data = response.data;
         // 遍历 data 数组，格式化 up_timestamp 字段
         this.data.forEach(item => {
@@ -165,13 +166,13 @@ export default {
         this.pagination.total = this.data.length; // 更新 total 属性
         this.dataLoading= false;
       } catch (error) {
-        console.error('Error fetching data', error);
+        console.error('获取数据时出错', error);
       }
     },
 
     async addItem(item) {
       try {
-        await axios.post('http://localhost:3002/api/items', { data: item });
+        await axios.post('http://localhost:3002/api/work_order/items', { data: item });
         this.fetchData();
       } catch (error) {
         console.error('Error adding item', error);
@@ -180,7 +181,7 @@ export default {
 
     async updateItem(item) {
       try {
-        await axios.put(`http://localhost:3002/api/items/${item.id}`, { data: item });
+        await axios.put(`http://localhost:3002/api/work_order/items/${item.id}`, { data: item });
         this.fetchData();
       } catch (error) {
         console.error('Error updating item', error);
@@ -189,7 +190,7 @@ export default {
 
     async deleteItem(id) {
       try {
-        await axios.delete(`http://localhost:3002/api/items/${id}`);
+        await axios.delete(`http://localhost:3002/api/work_order/items/${id}`);
         this.fetchData();
         console.log('工单删除成功', id);
       } catch (error) {

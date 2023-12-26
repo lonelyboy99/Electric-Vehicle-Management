@@ -4,10 +4,10 @@
       ref="form"
       :data="formData"
       :label-width="80"
+      :style="{ marginBottom: '8px' }"
       colon
       @reset="onReset"
       @submit="onSubmit"
-      :style="{ marginBottom: '8px' }"
     >
       <t-row>
         <t-col :span="10">
@@ -16,10 +16,10 @@
               <t-form-item label="UUID" name="name">
                 <t-input
                   v-model="formData.name"
-                  class="form-item-content"
-                  type="search"
-                  placeholder="请输入设备UUID"
                   :style="{ minWidth: '134px' }"
+                  class="form-item-content"
+                  placeholder="请输入设备UUID"
+                  type="search"
                 />
               </t-form-item>
             </t-col>
@@ -27,10 +27,10 @@
               <t-form-item label="区号" name="status">
                 <t-input
                   v-model="formData.name"
-                  class="form-item-content"
-                  type="search"
-                  placeholder="请输入区"
                   :style="{ minWidth: '134px' }"
+                  class="form-item-content"
+                  placeholder="请输入区"
+                  type="search"
                 />
               </t-form-item>
             </t-col>
@@ -38,17 +38,17 @@
               <t-form-item label="组号" name="no">
                 <t-input
                   v-model="formData.no"
+                  :style="{ minWidth: '134px' }"
                   class="form-item-content"
                   placeholder="请输入组号"
-                  :style="{ minWidth: '134px' }"
                 />
               </t-form-item>
             </t-col>
           </t-row>
         </t-col>
         <t-col :span="2" class="operation-container">
-          <t-button theme="primary" type="submit" :style="{ marginLeft: '8px' }"> 查询 </t-button>
-          <t-button type="reset" variant="base" theme="default"> 重置 </t-button>
+          <t-button :style="{ marginLeft: '8px' }" theme="primary" type="submit"> 查询</t-button>
+          <t-button theme="default" type="reset" variant="base"> 重置</t-button>
         </t-col>
       </t-row>
     </t-form>
@@ -56,10 +56,10 @@
       ref="form"
       :data="formData"
       :label-width="80"
+      :style="{ marginBottom: '8px' }"
       colon
       @reset="onReset"
       @submit="onSubmit"
-      :style="{ marginBottom: '8px' }"
     >
       <t-row>
         <t-col>
@@ -67,20 +67,20 @@
             <t-col>
               <t-form-item label="灯控操作" name="status">
                 <t-select
-                  :auto-width="true"
                   v-model="formData.status"
-                  class="form-item-content`"
+                  :auto-width="true"
                   :options="LIGHT_CONTROL"
+                  class="form-item-content`"
                   placeholder="请选择操作类型"
                 />
               </t-form-item>
-            </t-col >
+            </t-col>
             <t-col v-if="showSelect">
               <t-form-item label="网关" name="device_name">
                 <t-select
                   v-model="formData.device_name"
-                  class="form-item-content`"
                   :options="DEVICE_NAME"
+                  class="form-item-content`"
                   placeholder="请选择操作类型"
                 />
               </t-form-item>
@@ -89,8 +89,8 @@
               <t-form-item label="区" name="area">
                 <t-select
                   v-model="formData.area"
-                  class="form-item-content`"
                   :options="AREA"
+                  class="form-item-content`"
                   placeholder="请选择操作类型"
                 />
               </t-form-item>
@@ -99,8 +99,8 @@
               <t-form-item label="号" name="number">
                 <t-select
                   v-model="formData.number"
-                  class="form-item-content`"
                   :options="NUMBER"
+                  class="form-item-content`"
                   placeholder="请选择操作类型"
                 />
               </t-form-item>
@@ -109,8 +109,8 @@
               <t-form-item label="组" name="number">
                 <t-select
                   v-model="formData.number"
-                  class="form-item-content`"
                   :options="NUMBER"
+                  class="form-item-content`"
                   placeholder="请选择操作类型"
                 />
               </t-form-item>
@@ -119,8 +119,8 @@
               <t-form-item label="标签" name="number">
                 <t-select
                   v-model="formData.number"
-                  class="form-item-content`"
                   :options="NUMBER"
+                  class="form-item-content`"
                   placeholder="请选择操作类型"
                 />
               </t-form-item>
@@ -130,50 +130,338 @@
               <t-button variant="base" @click="sendMqttMessage('setLightMode','常灭')">常灭</t-button>
               <t-button variant="base" @click="sendMqttMessage('blink','闪一闪')">闪一闪</t-button>
               <t-button variant="base" @click="sendMqttMessage('stopBlink','停止闪')">停止闪</t-button>
-              <t-button variant="base" @click="sendMqttMessage('setLightMode','休眠')"> 休眠 </t-button>
-              <t-button variant="base" @click="moreFunctions"> 更多功能 </t-button>
+              <t-button variant="base" @click="sendMqttMessage('setLightMode','休眠')"> 休眠</t-button>
+              <t-button variant="base" @click="moreFunctions"> 更多功能</t-button>
             </t-col>
           </t-row>
         </t-col>
       </t-row>
     </t-form>
-    <div class="table-container">
-      <t-table
-        :data="tableData"
-        :columns="columns"
-        :rowKey="rowKey"
-        :verticalAlign="verticalAlign"
-        :hover="hover"
-        :pagination="pagination"
-        @page-change="rehandlePageChange"
-        @change="rehandleChange"
-        :loading="dataLoading"
-        :headerAffixedTop="true"
-        :headerAffixProps="{ offsetTop, container: getContainer }"
-      >
-        <template #op="slotProps">
-          <a class="t-button-link" @click="rehandleClickOp(slotProps)">管理</a>
-          <a class="t-button-link" @click="handleClickDelete(slotProps)">删除</a>
+    <t-tabs>
+      <t-tab-panel>
+        <template #label>
+          <icon name="lightbulb" style="margin-right: 4px"/>
+          灯
         </template>
-      </t-table>
-      <t-dialog
-        header="确认删除当前所选设备？"
-        :body="confirmBody"
-        :visible.sync="confirmVisible"
-        @confirm="onConfirmDelete"
-        :onCancel="onCancel"
+        <t-table
+          :columns="columns"
+          :data="tableData"
+          :headerAffixProps="{ offsetTop, container: getContainer }"
+          :headerAffixedTop="true"
+          :hover="hover"
+          :loading="dataLoading"
+          :pagination="pagination"
+          :rowKey="rowKey"
+          :verticalAlign="verticalAlign"
+          @change="rehandleChange"
+          @page-change="rehandlePageChange"
+        >
+          <template #op="slotProps">
+            <a class="t-button-link" @click="rehandleClickOp(slotProps)">管理</a>
+            <a class="t-button-link" @click="handleClickDelete(slotProps)">删除</a>
+          </template>
+        </t-table>
+      </t-tab-panel>
+      <t-tab-panel value="second">
+        <template #label>
+          <icon name="system-application" style="margin-right: 4px"/>
+          网关
+        </template>
+        <t-table
+          :columns="columns1"
+          :data="deviceData"
+          :headerAffixProps="{ offsetTop, container: getContainer }"
+          :headerAffixedTop="true"
+          :hover="hover"
+          :loading="dataLoading"
+          :pagination="pagination1"
+          :rowKey="rowKey1"
+          :verticalAlign="verticalAlign"
+          @change="rehandleChange"
+          @page-change="rehandlePageChange"
+        >
+          <template #op="slotProps">
+            <a class="t-button-link" @click="handleClickDelete(slotProps)">删除</a>
+          </template>
+        </t-table>
+      </t-tab-panel>
+    </t-tabs>
+    <t-dialog
+      :body="confirmBody"
+      :onCancel="onCancel"
+      :visible.sync="confirmVisible"
+      header="确认删除当前所选设备？"
+      @confirm="onConfirmDelete"
+    >
+    </t-dialog>
+    <t-dialog
+      :confirmBtn="null"
+      :visible.sync="functionVisible"
+      header="更多功能"
+      width="1000px"
+    >
+      <t-form
+        ref="form"
+        :data="formData"
+        :label-width="80"
+        :style="{ marginBottom: '8px' }"
+        colon
+        @reset="onReset"
+        @submit="onSubmit"
       >
-      </t-dialog>
-      <t-dialog
-        header="更多功能"
-        :visible.sync="functionVisible"
-      >
-      </t-dialog>
-    </div>
+        <t-row>
+          <t-col>
+            <t-row :gutter="[16, 24]">
+              <t-col>
+                <t-form-item label="灯控操作" name="status">
+                  <t-select
+                    v-model="formData.status"
+                    :auto-width="true"
+                    :options="LIGHT_CONTROL"
+                    class="form-item-content`"
+                    placeholder="请选择操作类型"
+                  />
+                </t-form-item>
+              </t-col>
+              <t-col v-if="showSelect">
+                <t-form-item label="网关" name="device_name">
+                  <t-select
+                    v-model="formData.device_name"
+                    :options="DEVICE_NAME"
+                    class="form-item-content`"
+                    placeholder="请选择操作类型"
+                  />
+                </t-form-item>
+              </t-col>
+              <t-col v-if="showSelect">
+                <t-form-item label="区" name="area">
+                  <t-select
+                    v-model="formData.area"
+                    :options="AREA"
+                    class="form-item-content`"
+                    placeholder="请选择操作类型"
+                  />
+                </t-form-item>
+              </t-col>
+              <t-col v-if="showSelect1">
+                <t-form-item label="号" name="number">
+                  <t-select
+                    v-model="formData.number"
+                    :options="NUMBER"
+                    class="form-item-content`"
+                    placeholder="请选择操作类型"
+                  />
+                </t-form-item>
+              </t-col>
+              <t-col v-if="showSelect2">
+                <t-form-item label="组" name="number">
+                  <t-select
+                    v-model="formData.number"
+                    :options="NUMBER"
+                    class="form-item-content`"
+                    placeholder="请选择操作类型"
+                  />
+                </t-form-item>
+              </t-col>
+              <t-col v-if="showSelect3">
+                <t-form-item label="标签" name="number">
+                  <t-select
+                    v-model="formData.number"
+                    :options="NUMBER"
+                    class="form-item-content`"
+                    placeholder="请选择操作类型"
+                  />
+                </t-form-item>
+              </t-col>
+            </t-row>
+          </t-col>
+        </t-row>
+      </t-form>
+      <div>
+        <t-tabs :value="value" @change="(newValue) => (value = newValue)">
+          <t-tab-panel value="first">
+            <template #label>
+              <icon name="home" style="margin-right: 4px"/>
+              灯具设置
+            </template>
+            <t-tabs :value="value1" placement="left" style="margin-top: 20px"
+                    @change="(newValue) => (value1 = newValue)">
+              <t-tab-panel label="基本设置" value="light_setting">
+                <t-list-item>
+                  亮灯模式
+                  <template #action>
+                    <t-space size="70px">
+                      <t-radio-group default-value="1" variant="primary-filled">
+                        <t-radio-button style="margin-left: auto" value="1">常亮</t-radio-button>
+                        <t-radio-button style="margin-left: auto" value="2">常灭</t-radio-button>
+                        <t-radio-button style="margin-left: auto" value="3">感应</t-radio-button>
+                      </t-radio-group>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  有人亮度
+                  <template #action>
+                    <t-space size="70px">
+                      <t-slider v-model="light_value" :label="false"/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  无人亮度
+                  <template #action>
+                    <t-space size="70px">
+                      <t-slider v-model="light_value" :label="false"/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  色温
+                  <template #action>
+                    <t-space size="70px">
+                      <t-slider v-model="light_value"/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  感应模式
+                  <template #action>
+                    <t-space size="70px">
+                      <t-radio-group default-value="1" variant="primary-filled">
+                        <t-radio-button style="margin-left: auto" value="1">一段</t-radio-button>
+                        <t-radio-button style="margin-left: auto" value="2">二段</t-radio-button>
+                      </t-radio-group>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  一段延时
+                  <template #action>
+                    <t-space size="70px">
+                    <t-form>
+                      <t-form-item name="number">
+                        <t-select
+                          v-model="formData.number"
+                          :options="NUMBER"
+                          class="form-item-content`"
+                          placeholder="请选择操作类型"
+                        />
+                      </t-form-item>
+                    </t-form>
+                    <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  二段延时
+                  <template #action>
+                    <t-space size="70px">
+                      <t-form>
+                        <t-form-item name="number">
+                          <t-select
+                            v-model="formData.number"
+                            :options="NUMBER"
+                            class="form-item-content`"
+                            placeholder="请选择操作类型"
+                          />
+                        </t-form-item>
+                      </t-form>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  恒照度模式
+                  <template #action>
+                    <t-space size="70px">
+                      <t-radio-group default-value="1" variant="primary-filled">
+                        <t-radio-button style="margin-left: auto" value="1">无效</t-radio-button>
+                        <t-radio-button style="margin-left: auto" value="2">自控</t-radio-button>
+                        <t-radio-button style="margin-left: auto" value="3">被控</t-radio-button>
+                      </t-radio-group>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+              </t-tab-panel>
+              <t-tab-panel label="传感器设置" value="second">
+                <t-list-item>
+                  传感器开关
+                  <template #action>
+                  <t-space size="70px">
+                <t-switch size="large" v-model="checked" :label="['开', '关']"></t-switch>
+                  <t-button>发送</t-button>
+                  </t-space>
+                    </template>
+                </t-list-item>
+                <t-list-item>
+                  组网开关
+                  <template #action>
+                    <t-space size="70px">
+                      <t-switch size="large" v-model="checked" :label="['开', '关']"></t-switch>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+              </t-tab-panel>
+              <t-tab-panel label="调光设置" value="third">
+                <p style="padding: 25px">选项卡3</p>
+              </t-tab-panel>
+              <t-tab-panel label="遥控器设置" value="fourth">
+                <p style="padding: 25px">选项卡4</p>
+              </t-tab-panel>
+              <t-tab-panel label="恒照度" value="fifth">
+                <p style="padding: 25px">选项卡5</p>
+              </t-tab-panel>
+              <t-tab-panel label="网络设置" value="sixth">
+                <p style="padding: 25px">选项卡6</p>
+              </t-tab-panel>
+            </t-tabs>
+          </t-tab-panel>
+          <t-tab-panel value="number">
+            <template #label>
+              <icon name="lightbulb-circle" style="margin-right: 4px"/>
+              设备编号
+            </template>
+            <t-tabs :value="value2" placement="left" style="margin-top: 20px"
+                    @change="(newValue) => (value2 = newValue)">
+              <t-tab-panel label="编号设置" value="device_number">
+                <p style="padding: 25px">选项卡1</p>
+              </t-tab-panel>
+              <t-tab-panel label="设备关联" value="second">
+                <p style="padding: 25px">选项卡2</p>
+              </t-tab-panel>
+            </t-tabs>
+          </t-tab-panel>
+          <t-tab-panel value="mode">
+            <template #label>
+              <icon name="layers" style="margin-right: 4px"/>
+              情景模式
+            </template>
+            <t-tabs :value="value3" placement="left" style="margin-top: 20px"
+                    @change="(newValue) => (value3 = newValue)">
+              <t-tab-panel label="常规情景" value="scenario_mode">
+                <p style="padding: 25px">选项卡1</p>
+              </t-tab-panel>
+              <t-tab-panel label="定时情景" value="second">
+                <p style="padding: 25px">选项卡2</p>
+              </t-tab-panel>
+            </t-tabs>
+          </t-tab-panel>
+        </t-tabs>
+      </div>
+    </t-dialog>
+
   </div>
 </template>
 <script>
-import { prefix } from '@/config/global';
+import {prefix} from '@/config/global';
+import {Icon} from 'tdesign-icons-vue';
 
 import {
   // DEVICE_NAME,
@@ -184,9 +472,11 @@ import mqtt from "mqtt";
 export default {
   name: 'list-table',
   components: {
+    Icon,
   },
   data() {
     return {
+      checked: false,
       DEVICE_NAME: [],
       AREA: [],
       NUMBER: [],
@@ -202,11 +492,15 @@ export default {
         number: '',
       },
       selectedRowKeys: [1],
-      data: [],
+      deviceData: [],
       receivedMessages: [],
       tableData: [],
       dataLoading: false,
       value: 'first',
+      value1: 'light_setting',
+      value2: 'device_number',
+      value3: 'scenario_mode',
+      light_value: 0,
       columns: [
         {colKey: 'row-select', type: 'multiple', width: 20, fixed: 'left'},
         {
@@ -321,7 +615,26 @@ export default {
           title: '操作',
         },
       ],
+      columns1: [
+        {colKey: 'row-select', type: 'multiple', width: 20, fixed: 'left'},
+        {
+          title: '网关',
+          align: 'left',
+          width: 200,
+          ellipsis: true,
+          colKey: 'device_name',
+          fixed: 'left',
+        },
+        {
+          align: 'center',
+          fixed: 'right',
+          width: 200,
+          colKey: 'op',
+          title: '操作',
+        },
+      ],
       rowKey: 'uuid',
+      rowKey1: 'device_name',
       tableLayout: 'auto',
       verticalAlign: 'middle',
       hover: true,
@@ -329,7 +642,12 @@ export default {
       // 与pagination对齐
       pagination: {
         defaultPageSize: 20,
-        total: 1000,
+        total: 1,
+        defaultCurrent: 1,
+      },
+      pagination1: {
+        defaultPageSize: 20,
+        total: 1,
         defaultCurrent: 1,
       },
       functionVisible: false,
@@ -340,7 +658,7 @@ export default {
   computed: {
     confirmBody() {
       if (this.deleteIdx > -1) {
-        const { uuid } = this.tableData?.[this.deleteIdx];
+        const {uuid} = this.tableData?.[this.deleteIdx];
         return `删除后，${uuid}的所有信息将被清空，且无法恢复`;
       }
       return '';
@@ -349,21 +667,21 @@ export default {
       return this.$store.state.setting.isUseTabsRouter ? 48 : 0;
     },
   },
-  watch:{
-    'formData.status': function(newStatus) {
+  watch: {
+    'formData.status': function (newStatus) {
       // 检查第一个下拉菜单的选定值并更新第二个下拉菜单的选项
-      if(newStatus === '1'){
+      if (newStatus === '1') {
         this.formData.code = 400;
       }
-      if (newStatus === '2' || newStatus === '3' || newStatus === '4'|| newStatus === '5') {
+      if (newStatus === '2' || newStatus === '3' || newStatus === '4' || newStatus === '5') {
         // 如果选择了"区操作"，显示第二个下拉菜单并更新其选项
         this.showSelect = true;
         this.showSelect1 = newStatus === '3';
         this.showSelect2 = newStatus === '4';
         this.showSelect3 = newStatus === '5';
-        if(newStatus === '3'){
+        if (newStatus === '3') {
           this.formData.code = 100;
-        }else {
+        } else {
           this.formData.code = 200;
         }
       } else {
@@ -379,6 +697,7 @@ export default {
     this.initMqtt();
     setInterval(() => {
       this.pagination.total = this.tableData.length;
+      this.pagination1.total = this.deviceData.length;
     }, 100);
 
   },
@@ -402,7 +721,7 @@ export default {
     rehandleChange(changeParams, triggerAndData) {
       console.log('统一Change', changeParams, triggerAndData);
     },
-    rehandleClickOp({ text, row }) {
+    rehandleClickOp({text, row}) {
       console.log(text, row);
     },
     handleClickDelete(row) {
@@ -510,7 +829,7 @@ export default {
     /**
      * MQTT发送控灯指令
      */
-    sendMqttMessage(formData,action,mode) {
+    sendMqttMessage(formData, action, mode) {
       const message = {
         code: this.formData.code,
         deviceName: this.formData.device_name,
@@ -602,6 +921,17 @@ export default {
         console.log("不同的数据 进行添加")
         this.tableData.unshift(rowData);
       }
+
+      const existingIndex1 = this.deviceData.findIndex(item => item.device_name === rowData.device_name);
+      if (existingIndex1 !== -1) {
+        // 更新现有条目
+        this.$set(this.deviceData, existingIndex1, rowData);
+        console.log("有相同的数据")
+      } else {
+        // 将新条目添加到tableData
+        console.log("不同的数据 进行添加")
+        this.deviceData.unshift(rowData);
+      }
       this.dataLoading = false;
     },
   },
@@ -636,6 +966,7 @@ export default {
     margin-left: 8px;
   }
 }
+
 .t-button + .t-button {
   margin-left: var(--td-comp-margin-s);
 }

@@ -213,7 +213,7 @@ export default {
           };
           console.log(dataToCreate);
           // 发送创建项目的 HTTP 请求
-          const response = await axios.post(`http://localhost:3002/api/items`, { data: dataToCreate });
+          const response = await axios.post(`http://localhost:3002/api/work_order/items`, { data: dataToCreate });
 
           // 处理响应，显示成功消息等
           this.$message.success(response.data);
