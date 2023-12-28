@@ -141,7 +141,7 @@
       <t-tab-panel>
         <template #label>
           <icon name="lightbulb" style="margin-right: 4px"/>
-          灯
+          灯具
         </template>
         <t-table
           :columns="columns"
@@ -198,7 +198,7 @@
       :confirmBtn="null"
       :visible.sync="functionVisible"
       header="更多功能"
-      width="1000px"
+      width="1200px"
     >
       <t-form
         ref="form"
@@ -291,12 +291,12 @@
                   亮灯模式
                   <template #action>
                     <t-space size="70px">
-                      <t-radio-group default-value="1" variant="primary-filled">
+                      <t-radio-group v-model="selectedMode" variant="primary-filled">
                         <t-radio-button style="margin-left: auto" value="1">常亮</t-radio-button>
                         <t-radio-button style="margin-left: auto" value="2">常灭</t-radio-button>
                         <t-radio-button style="margin-left: auto" value="3">感应</t-radio-button>
                       </t-radio-group>
-                      <t-button>发送</t-button>
+                      <t-button @click="sendMqttMessage('setLightMode', getModeLabel(selectedMode))">发送</t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -304,8 +304,8 @@
                   有人亮度
                   <template #action>
                     <t-space size="70px">
-                      <t-slider v-model="light_value" :label="false"/>
-                      <t-button>发送</t-button>
+                      <t-slider v-model="light_value" style="margin-right: 184px"/>
+                      <t-button @click="sendMqttMessage('setHighBright', light_value)">发送</t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -313,8 +313,8 @@
                   无人亮度
                   <template #action>
                     <t-space size="70px">
-                      <t-slider v-model="light_value" :label="false"/>
-                      <t-button>发送</t-button>
+                      <t-slider v-model="light_value1" style="margin-right: 184px"/>
+                      <t-button @click="sendMqttMessage('setStandbyBright', light_value1)">发送</t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -322,8 +322,8 @@
                   色温
                   <template #action>
                     <t-space size="70px">
-                      <t-slider v-model="light_value"/>
-                      <t-button>发送</t-button>
+                      <t-slider v-model="light_value2" style="margin-right: 184px"/>
+                      <t-button @click="sendMqttMessage('setCctBright', light_value2)">发送</t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -331,11 +331,11 @@
                   感应模式
                   <template #action>
                     <t-space size="70px">
-                      <t-radio-group default-value="1" variant="primary-filled">
-                        <t-radio-button style="margin-left: auto" value="1">一段</t-radio-button>
-                        <t-radio-button style="margin-left: auto" value="2">二段</t-radio-button>
+                      <t-radio-group v-model="selectedMode1" default-value="1" variant="primary-filled">
+                        <t-radio-button style="margin-left: auto" value="4">一段</t-radio-button>
+                        <t-radio-button style="margin-left: auto" value="5">二段</t-radio-button>
                       </t-radio-group>
-                      <t-button>发送</t-button>
+                      <t-button @click="sendMqttMessage('setDelayMode', getModeLabel(selectedMode1))">发送</t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -343,17 +343,17 @@
                   一段延时
                   <template #action>
                     <t-space size="70px">
-                    <t-form>
-                      <t-form-item name="number">
-                        <t-select
-                          v-model="formData.number"
-                          :options="NUMBER"
-                          class="form-item-content`"
-                          placeholder="请选择操作类型"
-                        />
-                      </t-form-item>
-                    </t-form>
-                    <t-button>发送</t-button>
+                      <t-form>
+                        <t-form-item name="number">
+                          <t-select
+                            v-model="delay_time1"
+                            :options="DELAY_TIME"
+                            class="form-item-content`"
+                            placeholder="请选择延时时间"
+                          />
+                        </t-form-item>
+                      </t-form>
+                      <t-button @click="sendMqttMessage('setDelayTime', delay_time1)">发送</t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -364,14 +364,14 @@
                       <t-form>
                         <t-form-item name="number">
                           <t-select
-                            v-model="formData.number"
-                            :options="NUMBER"
+                            v-model="delay_time2"
+                            :options="DELAY_TIME"
                             class="form-item-content`"
-                            placeholder="请选择操作类型"
+                            placeholder="请选择延时时间"
                           />
                         </t-form-item>
                       </t-form>
-                      <t-button>发送</t-button>
+                      <t-button @click="sendMqttMessage('setDelayTime2', delay_time2)">发送</t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -379,12 +379,12 @@
                   恒照度模式
                   <template #action>
                     <t-space size="70px">
-                      <t-radio-group default-value="1" variant="primary-filled">
-                        <t-radio-button style="margin-left: auto" value="1">无效</t-radio-button>
-                        <t-radio-button style="margin-left: auto" value="2">自控</t-radio-button>
-                        <t-radio-button style="margin-left: auto" value="3">被控</t-radio-button>
+                      <t-radio-group v-model="selectedMode2" default-value="1" variant="primary-filled">
+                        <t-radio-button style="margin-left: auto" value="6">无效</t-radio-button>
+                        <t-radio-button style="margin-left: auto" value="7">自控</t-radio-button>
+                        <t-radio-button style="margin-left: auto" value="8">被控</t-radio-button>
                       </t-radio-group>
-                      <t-button>发送</t-button>
+                      <t-button @click="sendMqttMessage('setAlsMode', getModeLabel(selectedMode2))">发送</t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -393,33 +393,159 @@
                 <t-list-item>
                   传感器开关
                   <template #action>
-                  <t-space size="70px">
-                <t-switch size="large" v-model="checked" :label="['开', '关']"></t-switch>
-                  <t-button>发送</t-button>
-                  </t-space>
-                    </template>
+                    <t-space size="70px">
+                      <t-switch v-model="checked" :label="['开', '关']" size="large"></t-switch>
+                      <t-button @click="sendMqttMessage(checked ? 'ssrOn' : 'ssrOff')">发送</t-button>
+                    </t-space>
+                  </template>
                 </t-list-item>
                 <t-list-item>
                   组网开关
                   <template #action>
                     <t-space size="70px">
-                      <t-switch size="large" v-model="checked" :label="['开', '关']"></t-switch>
-                      <t-button>发送</t-button>
+                      <t-switch v-model="checked1" :label="['开', '关']" size="large"></t-switch>
+                      <t-button @click="sendMqttMessage(checked1 ? 'netOn' : 'netOff')">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  触发间隔
+                  <template #action>
+                    <t-space size="70px">
+                      <t-slider v-model="light_trigger" :max="60" style="margin-right: 184px"/>
+                      <t-button @click="sendMqttMessage('setSensorlnterval', light_trigger)">发送</t-button>
                     </t-space>
                   </template>
                 </t-list-item>
               </t-tab-panel>
               <t-tab-panel label="调光设置" value="third">
-                <p style="padding: 25px">选项卡3</p>
+                <t-list-item>
+                  亮灯速度
+                  <template #action>
+                    <t-space size="70px">
+                      <t-slider v-model="light_fast" :max="9" style="margin-right: 184px"/>
+                      <t-button @click="sendMqttMessage('setBrightRiseTime', light_fast)">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  灭灯速度
+                  <template #action>
+                    <t-space size="70px">
+                      <t-slider v-model="light_fast1" :max="9" style="margin-right: 184px"/>
+                      <t-button @click="sendMqttMessage('setBrightFallTime', light_fast1)">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  色温调高速度
+                  <template #action>
+                    <t-space size="70px">
+                      <t-slider v-model="light_fast2" :max="9" style="margin-right: 184px"/>
+                      <t-button @click="sendMqttMessage('setCctRiseTime', light_fast2)">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  色温降低速度
+                  <template #action>
+                    <t-space size="70px">
+                      <t-slider v-model="light_fast3" :max="9" style="margin-right: 184px"/>
+                      <t-button @click="sendMqttMessage('setCctFallTime', light_fast3)">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
               </t-tab-panel>
               <t-tab-panel label="遥控器设置" value="fourth">
-                <p style="padding: 25px">选项卡4</p>
+                <t-list-item>
+                  红外开关
+                  <template #action>
+                    <t-space size="70px">
+                      <t-switch v-model="checked2" :label="['开', '关']" size="large"></t-switch>
+                      <t-button @click="sendMqttMessage(checked2 ? 'ircOn' : 'ircOff')">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
               </t-tab-panel>
               <t-tab-panel label="恒照度" value="fifth">
-                <p style="padding: 25px">选项卡5</p>
+                <t-list-item>
+                  设置照度值
+                  <template #action>
+                    <t-space size="70px">
+                      <t-input
+                        v-model="light_ill"
+                        placeholder="目标照度值[0-9000]"/>
+                      <t-button @click="sendMqttMessage('setAlsLux', light_ill)">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  发射开关
+                  <template #action>
+                    <t-space size="70px">
+                      <t-switch v-model="checked3" :label="['开', '关']" size="large"></t-switch>
+                      <t-button @click="sendMqttMessage(checked3 ? 'alsSyncEnable' : 'alsSyncDisable')">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  发射间隔
+                  <template #action>
+                    <t-space size="70px">
+                      <t-slider v-model="light_trigger1" :max="200" style="margin-right: 184px"/>
+                      <t-button @click="sendMqttMessage('setAlsInterval', light_trigger1)">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  给恒照度传感器起名
+                  <template #action>
+                    <t-space size="70px">
+                      <t-input
+                        v-model="light_name"
+                        placeholder="当前照度昵称"/>
+                      <t-button @click="sendMqttMessage('setAlsNotice', light_name)">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
               </t-tab-panel>
               <t-tab-panel label="网络设置" value="sixth">
-                <p style="padding: 25px">选项卡6</p>
+                <t-list-item>
+                  组跳数
+                  <template #action>
+                    <t-space size="70px">
+                      <t-slider v-model="mesh" :max="20" style="margin-right: 184px"/>
+                      <t-button @click="sendMqttMessage('setGroupTtl', mesh)">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  网跳数
+                  <template #action>
+                    <t-space size="70px">
+                      <t-slider v-model="mesh1" :max="20" style="margin-right: 184px"/>
+                      <t-button @click="sendMqttMessage('setNetTtl', mesh1)">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  重发次数
+                  <template #action>
+                    <t-space size="70px">
+                      <t-slider v-model="mesh2" :max="10" style="margin-right: 184px"/>
+                      <t-button @click="sendMqttMessage('setTxTimes', mesh2)">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  转发开关
+                  <template #action>
+                    <t-space size="70px">
+                      <t-switch v-model="checked4" :label="['开', '关']" size="large"></t-switch>
+                      <t-button @click="sendMqttMessage(checked4 ? 'relayOn' : 'relayOff')">发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
               </t-tab-panel>
             </t-tabs>
           </t-tab-panel>
@@ -431,10 +557,116 @@
             <t-tabs :value="value2" placement="left" style="margin-top: 20px"
                     @change="(newValue) => (value2 = newValue)">
               <t-tab-panel label="编号设置" value="device_number">
-                <p style="padding: 25px">选项卡1</p>
+                <t-list-item>
+                  修改区
+                  <template #action>
+                    <t-space size="70px">
+                      <t-input/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  修改组
+                  <template #action>
+                    <t-space size="70px">
+                      <t-input/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  修改号
+                  <template #action>
+                    <t-space size="70px">
+                      <t-input/>
+                      <t-input/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  设置标签
+                  <template #action>
+                    <t-space size="70px">
+                      <t-input/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  删除标签
+                  <template #action>
+                    <t-space size="70px">
+                      <t-input/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  清空标签
+                  <template #action>
+                    <t-space size="70px">
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  设置邻组通知
+                  <template #action>
+                    <t-space size="70px">
+                      <t-input/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  删除邻组通知
+                  <template #action>
+                    <t-space size="70px">
+                      <t-input/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  清空邻组通知
+                  <template #action>
+                    <t-space size="70px">
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+
               </t-tab-panel>
               <t-tab-panel label="设备关联" value="second">
-                <p style="padding: 25px">选项卡2</p>
+                <t-list-item>
+                  设备命名
+                  <template #action>
+                    <t-space size="70px">
+                      <t-input/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  关联设备
+                  <template #action>
+                    <t-space size="70px">
+                      <t-input/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  解除关联
+                  <template #action>
+                    <t-space size="70px">
+                      <t-input/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
               </t-tab-panel>
             </t-tabs>
           </t-tab-panel>
@@ -446,10 +678,38 @@
             <t-tabs :value="value3" placement="left" style="margin-top: 20px"
                     @change="(newValue) => (value3 = newValue)">
               <t-tab-panel label="常规情景" value="scenario_mode">
-                <p style="padding: 25px">选项卡1</p>
+                <t-list-item>
+                  读取情景模式
+                  <template #action>
+                    <t-space size="70px">
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  切换情景模式
+                  <template #action>
+                    <t-space size="70px">
+                      <t-select/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <t-list-item>
+                  情景模式重命名
+                  <template #action>
+                    <t-space size="70px">
+                      <t-select/>
+                      <p>新名称</p>
+                      <t-select/>
+                      <t-button>发送</t-button>
+                    </t-space>
+                  </template>
+                </t-list-item>
+                <p style="color: #be5a00">重命名可作用于单灯、群组、区操作等</p>
               </t-tab-panel>
               <t-tab-panel label="定时情景" value="second">
-                <p style="padding: 25px">选项卡2</p>
+                <p style="padding: 25px">....</p>
               </t-tab-panel>
             </t-tabs>
           </t-tab-panel>
@@ -464,8 +724,8 @@ import {prefix} from '@/config/global';
 import {Icon} from 'tdesign-icons-vue';
 
 import {
-  // DEVICE_NAME,
   LIGHT_CONTROL,
+  DELAY_TIME,
 } from '@/constants';
 import mqtt from "mqtt";
 
@@ -476,15 +736,40 @@ export default {
   },
   data() {
     return {
+      // 更多功能
+      selectedMode: "1",
+      selectedMode1: "4",
+      selectedMode2: "6",
       checked: false,
-      DEVICE_NAME: [],
-      AREA: [],
-      NUMBER: [],
-      LIGHT_CONTROL,
+      checked1: false,
+      checked2: false,
+      checked3: false,
+      checked4: false,
+      delay_time1:"0",
+      delay_time2:"0",
       showSelect: false,
       showSelect1: false,
       showSelect2: false,
       showSelect3: false,
+      light_value: 0,
+      light_value1: 0,
+      light_value2: 0,
+      light_trigger: 0,
+      light_trigger1: 0,
+      light_fast: 0,
+      light_fast1: 0,
+      light_fast2: 0,
+      light_fast3: 0,
+      light_ill: "",
+      light_name: "",
+      mesh: 0,
+      mesh1: 0,
+      mesh2: 0,
+      DEVICE_NAME: [],
+      AREA: [],
+      NUMBER: [],
+      LIGHT_CONTROL,
+      DELAY_TIME,
       prefix,
       formData: {
         device_name: '',
@@ -500,7 +785,7 @@ export default {
       value1: 'light_setting',
       value2: 'device_number',
       value3: 'scenario_mode',
-      light_value: 0,
+
       columns: [
         {colKey: 'row-select', type: 'multiple', width: 20, fixed: 'left'},
         {
@@ -702,6 +987,29 @@ export default {
 
   },
   methods: {
+    // 更多功能-
+    getModeLabel(mode) {
+      switch (mode) {
+        case "1":
+          return "常亮";
+        case "2":
+          return "常灭";
+        case "3":
+          return "感应";
+        case "4":
+          return "一段";
+        case "5":
+          return "二段";
+        case "6":
+          return "无效";
+        case "7":
+          return "自控";
+        case "8":
+          return "被控";
+        default:
+          return ""; // Handle default case if needed
+      }
+    },
     convertUnixTimestampToDateTime(unixTimestamp) {
       const dateTime = new Date(unixTimestamp * 1000); // 转换为毫秒
       return dateTime.toLocaleString();
@@ -829,7 +1137,7 @@ export default {
     /**
      * MQTT发送控灯指令
      */
-    sendMqttMessage(formData, action, mode) {
+    sendMqttMessage(action, mode) {
       const message = {
         code: this.formData.code,
         deviceName: this.formData.device_name,

@@ -3,6 +3,7 @@
     <t-card :bordered="false" class="list-card-container">
       <t-form>
         <t-row justify="space-between">
+          <t-space>
           <t-col>
             <t-form-item label="项目选择" name="status">
               <t-select
@@ -15,8 +16,9 @@
             </t-form-item>
           </t-col>
           <t-col>
-            <t-button style="margin-right:1400px" variant="base" @click="handleNav('/list/tree')"> 操作配置</t-button>
+            <t-button variant="base" @click="handleNav('/list/tree')"> 操作配置</t-button>
           </t-col>
+          </t-space>
         </t-row>
       </t-form>
       <div class="table-container">

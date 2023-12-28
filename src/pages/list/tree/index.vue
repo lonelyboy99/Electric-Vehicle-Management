@@ -3,10 +3,13 @@
     <div class="table-tree-container">
       <div class="list-tree-wrapper">
         <div class="list-tree-operator">
-          <t-input v-model="filterText" @input="onInput" placeholder="请输入关键词">
-            <search-icon slot="suffix-icon" size="20px" />
-          </t-input>
-          <t-tree :data="items" hover="true" expand-on-click-node="true" :default-expanded="expanded" :filter="filterByText" />
+          <t-form>
+            <t-form-item>
+              项目选择
+              <t-select>
+              </t-select>
+            </t-form-item>
+          </t-form>
         </div>
         <div class="list-tree-content">
           <common-table />
@@ -122,7 +125,7 @@ export default {
 .list-tree-operator {
   width: 200px;
   float: left;
-  padding: 30px 32px;
+  padding: 10px 32px;
 }
 
 .list-tree-content {

@@ -21,3 +21,16 @@ export const PROJECT_SELECTION: Array<IOption> = [
   { value: '南邮', label: '南邮' },
   { value: 'xx', label: 'xx' },
 ];
+export const DELAY_TIME: Array<IOption> = [
+  { value: '0', label: '0' },
+  { value: '5', label: '5' },
+  { value: '10', label: '10' },
+  { value: '20', label: '20' },
+  { value: '60', label: '60' },
+  { value: '120', label: '120' },
+  { value: '300', label: '300' },
+  { value: '600', label: '600' },
+  { value: '900', label: '900' },
+  { value: '1800', label: '1800' },
+];
+
