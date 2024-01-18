@@ -60,7 +60,7 @@ export default {
       console.log(val);
     },
     getRankClass(index) {
-      return ['dashboard-rank__cell', { 'dashboard-rank__cell--top': index < 3 }];
+      return ['home-rank__cell', { 'dashboard-rank__cell--top': index < 3 }];
     },
   },
 };

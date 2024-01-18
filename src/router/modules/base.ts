@@ -3,9 +3,9 @@ import Layout from '@/layouts/index.vue';
 
 export default [
   {
-    path: '/dashboard',
+    path: '/home',
     component: Layout,
-    redirect: '/dashboard/base',
+    redirect: '/home/base',
     name: 'dashboard',
     meta: {
       title: '首页',
@@ -15,13 +15,13 @@ export default [
       {
         path: 'base',
         name: 'DashboardBase',
-        component: () => import('@/pages/dashboard/base/index.vue'),
+        component: () => import('@/pages/home/base/index.vue'),
         meta: { title: '图表展示' },
       },
       {
         path: 'detail',
         name: 'DashboardDetail',
-        component: () => import('@/pages/dashboard/detail/index.vue'),
+        component: () => import('@/pages/home/detail/index.vue'),
         meta: { title: '数据展示' },
       },
     ],

@@ -13,42 +13,43 @@
         <t-col :span="10">
           <t-row :gutter="[16, 24]">
             <t-col :flex="1">
-              <t-form-item label="UUID" name="name">
+              <t-form-item label="区" name="name">
                 <t-input
-                  v-model="formData.name"
+                  v-model="searchData.area"
                   :style="{ minWidth: '134px' }"
                   class="form-item-content"
-                  placeholder="请输入设备UUID"
+                  placeholder="区"
                   type="search"
                 />
               </t-form-item>
             </t-col>
             <t-col :flex="1">
-              <t-form-item label="区号" name="status">
+              <t-form-item label="组" name="status">
                 <t-input
-                  v-model="formData.name"
+                  v-model="searchData.cluster"
                   :style="{ minWidth: '134px' }"
                   class="form-item-content"
-                  placeholder="请输入区"
+                  placeholder="组"
                   type="search"
                 />
               </t-form-item>
             </t-col>
             <t-col :flex="1">
-              <t-form-item label="组号" name="no">
+              <t-form-item label="号" name="no">
                 <t-input
-                  v-model="formData.no"
+                  v-model="searchData.number"
                   :style="{ minWidth: '134px' }"
                   class="form-item-content"
-                  placeholder="请输入组号"
+                  placeholder="号"
                 />
               </t-form-item>
             </t-col>
           </t-row>
         </t-col>
         <t-col :span="2" class="operation-container">
-          <t-button :style="{ marginLeft: '8px' }" theme="primary" type="submit"> 查询</t-button>
-          <t-button theme="default" type="reset" variant="base"> 重置</t-button>
+          <t-button :style="{ marginLeft: '8px' }" theme="primary" type="submit" @click="handleSearch()"> 查询
+          </t-button>
+          <t-button theme="default" type="reset" variant="base" @click="resetSearch()"> 重置</t-button>
         </t-col>
       </t-row>
     </t-form>
@@ -71,7 +72,8 @@
                   :auto-width="true"
                   :options="LIGHT_CONTROL"
                   class="form-item-content`"
-                  placeholder="请选择操作类型"
+                  placeholder="选择操作类型"
+                  :clearable="true"
                 />
               </t-form-item>
             </t-col>
@@ -82,6 +84,7 @@
                   :options="DEVICE_NAME"
                   class="form-item-content`"
                   placeholder="请选择操作类型"
+                  @change="handleGatewayChange()"
                 />
               </t-form-item>
             </t-col>
@@ -92,6 +95,7 @@
                   :options="AREA"
                   class="form-item-content`"
                   placeholder="请选择操作类型"
+                  @change="handleAreaChange()"
                 />
               </t-form-item>
             </t-col>
@@ -108,8 +112,8 @@
             <t-col v-if="showSelect2">
               <t-form-item label="组" name="number">
                 <t-select
-                  v-model="formData.number"
-                  :options="NUMBER"
+                  v-model="formData.cluster"
+                  :options="CLUSTER"
                   class="form-item-content`"
                   placeholder="请选择操作类型"
                 />
@@ -118,19 +122,25 @@
             <t-col v-if="showSelect3">
               <t-form-item label="标签" name="number">
                 <t-select
-                  v-model="formData.number"
-                  :options="NUMBER"
+                  v-model="formData.label"
+                  :options="LABEL"
                   class="form-item-content`"
                   placeholder="请选择操作类型"
                 />
               </t-form-item>
             </t-col>
             <t-col>
-              <t-button variant="base" @click="sendMqttMessage('setLightMode','常亮')">常亮</t-button>
-              <t-button variant="base" @click="sendMqttMessage('setLightMode','常灭')">常灭</t-button>
+              <t-button variant="base" @click="sendMqttMessage('setLightMode','常亮');updateData('常亮','light_mode')">
+                常亮
+              </t-button>
+              <t-button variant="base" @click="sendMqttMessage('setLightMode','常灭');updateData('常灭','light_mode')">
+                常灭
+              </t-button>
               <t-button variant="base" @click="sendMqttMessage('blink','闪一闪')">闪一闪</t-button>
               <t-button variant="base" @click="sendMqttMessage('stopBlink','停止闪')">停止闪</t-button>
-              <t-button variant="base" @click="sendMqttMessage('setLightMode','休眠')"> 休眠</t-button>
+              <t-button variant="base" @click="sendMqttMessage('setLightMode','休眠');updateData('休眠','light_mode')">
+                休眠
+              </t-button>
               <t-button variant="base" @click="moreFunctions"> 更多功能</t-button>
             </t-col>
           </t-row>
@@ -145,20 +155,26 @@
         </template>
         <t-table
           :columns="columns"
-          :data="tableData"
+          :data="lightData"
           :headerAffixProps="{ offsetTop, container: getContainer }"
           :headerAffixedTop="true"
           :hover="hover"
           :loading="dataLoading"
           :pagination="pagination"
           :rowKey="rowKey"
+          :stripe="true"
           :verticalAlign="verticalAlign"
           @change="rehandleChange"
           @page-change="rehandlePageChange"
         >
           <template #op="slotProps">
-            <a class="t-button-link" @click="rehandleClickOp(slotProps)">管理</a>
-            <a class="t-button-link" @click="handleClickDelete(slotProps)">删除</a>
+            <t-popconfirm :on-confirm="() => handleDelete(slotProps.row)"
+                          :popupProps="{ placement: 'right' }"
+                          content="确认删除灯具吗"
+                          theme="danger"
+            >
+              <a class="t-button-link" style="color: red">删除</a>
+            </t-popconfirm>
           </template>
         </t-table>
       </t-tab-panel>
@@ -176,26 +192,26 @@
           :loading="dataLoading"
           :pagination="pagination1"
           :rowKey="rowKey1"
+          :stripe="true"
           :verticalAlign="verticalAlign"
           @change="rehandleChange"
           @page-change="rehandlePageChange"
         >
           <template #op="slotProps">
-            <a class="t-button-link" @click="handleClickDelete(slotProps)">删除</a>
+            <t-popconfirm :on-confirm="() => handleDelete(slotProps.row)"
+                          :popupProps="{ placement: 'right' }"
+                          content="确认删除网关吗"
+                          theme="danger"
+            >
+              <a class="t-button-link" style="color: red">删除</a>
+            </t-popconfirm>
           </template>
         </t-table>
       </t-tab-panel>
     </t-tabs>
     <t-dialog
-      :body="confirmBody"
-      :onCancel="onCancel"
-      :visible.sync="confirmVisible"
-      header="确认删除当前所选设备？"
-      @confirm="onConfirmDelete"
-    >
-    </t-dialog>
-    <t-dialog
       :confirmBtn="null"
+      top="4%"
       :visible.sync="functionVisible"
       header="更多功能"
       width="1200px"
@@ -216,7 +232,6 @@
                 <t-form-item label="灯控操作" name="status">
                   <t-select
                     v-model="formData.status"
-                    :auto-width="true"
                     :options="LIGHT_CONTROL"
                     class="form-item-content`"
                     placeholder="请选择操作类型"
@@ -230,6 +245,7 @@
                     :options="DEVICE_NAME"
                     class="form-item-content`"
                     placeholder="请选择操作类型"
+                    @change="handleGatewayChange()"
                   />
                 </t-form-item>
               </t-col>
@@ -240,6 +256,7 @@
                     :options="AREA"
                     class="form-item-content`"
                     placeholder="请选择操作类型"
+                    @change="handleAreaChange()"
                   />
                 </t-form-item>
               </t-col>
@@ -256,8 +273,8 @@
               <t-col v-if="showSelect2">
                 <t-form-item label="组" name="number">
                   <t-select
-                    v-model="formData.number"
-                    :options="NUMBER"
+                    v-model="formData.cluster"
+                    :options="CLUSTER"
                     class="form-item-content`"
                     placeholder="请选择操作类型"
                   />
@@ -266,8 +283,8 @@
               <t-col v-if="showSelect3">
                 <t-form-item label="标签" name="number">
                   <t-select
-                    v-model="formData.number"
-                    :options="NUMBER"
+                    v-model="formData.label"
+                    :options="LABEL"
                     class="form-item-content`"
                     placeholder="请选择操作类型"
                   />
@@ -296,7 +313,10 @@
                         <t-radio-button style="margin-left: auto" value="2">常灭</t-radio-button>
                         <t-radio-button style="margin-left: auto" value="3">感应</t-radio-button>
                       </t-radio-group>
-                      <t-button @click="sendMqttMessage('setLightMode', getModeLabel(selectedMode))">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage('setLightMode', getModeLabel(selectedMode));updateData(getModeLabel(selectedMode),'light_mode')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -305,7 +325,10 @@
                   <template #action>
                     <t-space size="70px">
                       <t-slider v-model="light_value" style="margin-right: 184px"/>
-                      <t-button @click="sendMqttMessage('setHighBright', light_value)">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage('setHighBright', light_value+'%');updateData(light_value+'%','high_bright')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -314,7 +337,10 @@
                   <template #action>
                     <t-space size="70px">
                       <t-slider v-model="light_value1" style="margin-right: 184px"/>
-                      <t-button @click="sendMqttMessage('setStandbyBright', light_value1)">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage('setStandbyBright', light_value1+'%');updateData(light_value1+'%','standby_bright')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -323,7 +349,10 @@
                   <template #action>
                     <t-space size="70px">
                       <t-slider v-model="light_value2" style="margin-right: 184px"/>
-                      <t-button @click="sendMqttMessage('setCctBright', light_value2)">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage('setCctBright', light_value2+'%');updateData(light_value2+'%','current_cct')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -335,7 +364,10 @@
                         <t-radio-button style="margin-left: auto" value="4">一段</t-radio-button>
                         <t-radio-button style="margin-left: auto" value="5">二段</t-radio-button>
                       </t-radio-group>
-                      <t-button @click="sendMqttMessage('setDelayMode', getModeLabel(selectedMode1))">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage('setDelayMode', getModeLabel(selectedMode1));updateData(getModeLabel(selectedMode1),'delay_mode')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -353,7 +385,10 @@
                           />
                         </t-form-item>
                       </t-form>
-                      <t-button @click="sendMqttMessage('setDelayTime', delay_time1)">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage('setDelayTime', delay_time1+'s');updateData(delay_time1+'s','delay_time')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -371,7 +406,10 @@
                           />
                         </t-form-item>
                       </t-form>
-                      <t-button @click="sendMqttMessage('setDelayTime2', delay_time2)">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage('setDelayTime2', delay_time2+'s');updateData(delay_time2+'s','delay_time2')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -384,7 +422,10 @@
                         <t-radio-button style="margin-left: auto" value="7">自控</t-radio-button>
                         <t-radio-button style="margin-left: auto" value="8">被控</t-radio-button>
                       </t-radio-group>
-                      <t-button @click="sendMqttMessage('setAlsMode', getModeLabel(selectedMode2))">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage('setAlsMode', getModeLabel(selectedMode2));updateData(getModeLabel(selectedMode2),'alscontrol_mode')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -395,7 +436,10 @@
                   <template #action>
                     <t-space size="70px">
                       <t-switch v-model="checked" :label="['开', '关']" size="large"></t-switch>
-                      <t-button @click="sendMqttMessage(checked ? 'ssrOn' : 'ssrOff')">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage(checked ? 'ssrOn' : 'ssrOff');updateData(checked ? '开' : '关','sensor_status')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -404,7 +448,10 @@
                   <template #action>
                     <t-space size="70px">
                       <t-switch v-model="checked1" :label="['开', '关']" size="large"></t-switch>
-                      <t-button @click="sendMqttMessage(checked1 ? 'netOn' : 'netOff')">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage(checked1 ? 'netOn' : 'netOff');updateData(checked1 ? '开' : '关','sensor_status')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -424,7 +471,10 @@
                   <template #action>
                     <t-space size="70px">
                       <t-slider v-model="light_fast" :max="9" style="margin-right: 184px"/>
-                      <t-button @click="sendMqttMessage('setBrightRiseTime', light_fast)">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage('setBrightRiseTime', light_fast+'s');updateData(light_fast+'s','bright_risetime')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -433,7 +483,10 @@
                   <template #action>
                     <t-space size="70px">
                       <t-slider v-model="light_fast1" :max="9" style="margin-right: 184px"/>
-                      <t-button @click="sendMqttMessage('setBrightFallTime', light_fast1)">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage('setBrightFallTime', light_fast1+'s');updateData(light_fast1+'s','bright_falltime')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -462,7 +515,10 @@
                   <template #action>
                     <t-space size="70px">
                       <t-switch v-model="checked2" :label="['开', '关']" size="large"></t-switch>
-                      <t-button @click="sendMqttMessage(checked2 ? 'ircOn' : 'ircOff')">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage(checked2 ? 'ircOn' : 'ircOff');updateData(checked2 ? '开' : '关','irc_status')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -542,7 +598,10 @@
                   <template #action>
                     <t-space size="70px">
                       <t-switch v-model="checked4" :label="['开', '关']" size="large"></t-switch>
-                      <t-button @click="sendMqttMessage(checked4 ? 'relayOn' : 'relayOff')">发送</t-button>
+                      <t-button
+                        @click="sendMqttMessage(checked4 ? 'relayOn' : 'relayOff');updateData(checked4 ? '开' : '关','sensor_transmit')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -561,8 +620,11 @@
                   修改区
                   <template #action>
                     <t-space size="70px">
-                      <t-input/>
-                      <t-button>发送</t-button>
+                      <t-input v-model="newArea"/>
+                      <t-button
+                        @click="sendMqttMessage('setAreaAddress', newArea);updateData(newArea,'area')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -570,8 +632,11 @@
                   修改组
                   <template #action>
                     <t-space size="70px">
-                      <t-input/>
-                      <t-button>发送</t-button>
+                      <t-input v-model="newCluster"/>
+                      <t-button
+                        @click="sendMqttMessage('setClusterAddress', newCluster);updateData(newCluster,'cluster')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -579,9 +644,11 @@
                   修改号
                   <template #action>
                     <t-space size="70px">
-                      <t-input/>
-                      <t-input/>
-                      <t-button>发送</t-button>
+                      <t-input v-model="newNumber"/>
+                      <t-button
+                        @click="sendMqttMessage('setNumberAddress', newNumber);updateData(newNumber,'number')">
+                        发送
+                      </t-button>
                     </t-space>
                   </template>
                 </t-list-item>
@@ -716,7 +783,6 @@
         </t-tabs>
       </div>
     </t-dialog>
-
   </div>
 </template>
 <script>
@@ -728,15 +794,21 @@ import {
   DELAY_TIME,
 } from '@/constants';
 import mqtt from "mqtt";
+import axios from "axios";
 
 export default {
   name: 'list-table',
   components: {
     Icon,
   },
+  props: {
+    selectedProject: String,
+    selectedAddress: String,
+  },
   data() {
     return {
       // 更多功能
+      timerId: null,
       selectedMode: "1",
       selectedMode1: "4",
       selectedMode2: "6",
@@ -745,8 +817,8 @@ export default {
       checked2: false,
       checked3: false,
       checked4: false,
-      delay_time1:"0",
-      delay_time2:"0",
+      delay_time1: "0",
+      delay_time2: "0",
       showSelect: false,
       showSelect1: false,
       showSelect2: false,
@@ -760,6 +832,9 @@ export default {
       light_fast1: 0,
       light_fast2: 0,
       light_fast3: 0,
+      newArea: "",
+      newCluster: "",
+      newNumber: "",
       light_ill: "",
       light_name: "",
       mesh: 0,
@@ -768,18 +843,29 @@ export default {
       DEVICE_NAME: [],
       AREA: [],
       NUMBER: [],
+      CLUSTER: [],
+      LABEL: [],
       LIGHT_CONTROL,
       DELAY_TIME,
       prefix,
+      searchData: {
+        area: '',
+        cluster: '',
+        number: '',
+      },
       formData: {
         device_name: '',
         area: '',
+        cluster: '',
         number: '',
+        label: '',
       },
-      selectedRowKeys: [1],
+      selectedRowKeys: [],
       deviceData: [],
       receivedMessages: [],
       tableData: [],
+      lightData: [],
+      isPolling: true,//轮询操作标志位
       dataLoading: false,
       value: 'first',
       value1: 'light_setting',
@@ -795,99 +881,184 @@ export default {
           ellipsis: true,
           colKey: 'uuid',
           fixed: 'left',
+          attrs: {
+            style: {
+              fontWeight: 600,
+            },
+          },
         },
         {
           title: '区',
+          align: 'center',
           width: 80,
           ellipsis: true,
           colKey: 'area',
+          attrs: {
+            style: {
+              fontWeight: 600,
+            },
+          },
         },
         {
           title: '组',
+          align: 'center',
           width: 80,
           ellipsis: true,
           colKey: 'cluster',
+          attrs: {
+            style: {
+              fontWeight: 600,
+            },
+          },
         },
         {
           title: '号',
+          align: 'center',
           width: 80,
           ellipsis: true,
           colKey: 'number',
+          attrs: {
+            style: {
+              fontWeight: 600,
+            },
+          },
         },
         {
           title: '情景模式',
+          align: 'center',
           width: 100,
           ellipsis: true,
           colKey: 'scene_no',
         },
         {
           title: '亮灯模式',
+          align: 'center',
           width: 100,
           ellipsis: true,
           colKey: 'light_mode',
         },
         {
           title: '能耗(千瓦时)',
+          align: 'center',
           width: 130,
           ellipsis: true,
           colKey: 'energy_dur',
         },
         {
           title: '功率(瓦)',
+          align: 'center',
           width: 100,
           ellipsis: true,
           colKey: 'power',
         },
         {
           title: '能耗更新时间',
+          align: 'center',
           width: 120,
           ellipsis: true,
           colKey: 'ConsumptionUpdate',
         },
         {
           title: '当前亮度',
+          align: 'center',
           width: 100,
           ellipsis: true,
           colKey: 'current_bright',
         },
         {
           title: '有人亮度',
+          align: 'center',
           width: 100,
           ellipsis: true,
           colKey: 'high_bright',
         },
         {
           title: '无人亮度',
+          align: 'center',
           width: 100,
           ellipsis: true,
           colKey: 'standby_bright',
         },
         {
           title: '色温',
+          align: 'center',
           width: 100,
           ellipsis: true,
           colKey: 'current_cct',
         },
         {
+          title: '恒照度模式',
+          align: 'center',
+          width: 120,
+          ellipsis: true,
+          colKey: 'alscontrol_mode',
+        },
+        {
+          title: '亮灯速度',
+          align: 'center',
+          width: 100,
+          ellipsis: true,
+          colKey: 'bright_risetime',
+        },
+        {
+          title: '灭灯速度',
+          align: 'center',
+          width: 100,
+          ellipsis: true,
+          colKey: 'bright_falltime',
+        },
+        {
+          title: '传感器开关',
+          align: 'center',
+          width: 120,
+          ellipsis: true,
+          colKey: 'sensor_status',
+        },
+        {
+          title: '组网开关',
+          align: 'center',
+          width: 100,
+          ellipsis: true,
+          colKey: 'sensor_sync',
+        },
+        {
+          title: '转发开关',
+          align: 'center',
+          width: 100,
+          ellipsis: true,
+          colKey: 'sensor_transmit',
+        },
+        {
+          title: '红外开关',
+          align: 'center',
+          width: 100,
+          ellipsis: true,
+          colKey: 'irc_status',
+        },
+        {
           title: '感应模式',
+          align: 'center',
           width: 100,
           ellipsis: true,
           colKey: 'delay_mode',
         },
         {
           title: '一段延时',
-          width: 100,
+          align: 'center',
+          width: 120,
           ellipsis: true,
           colKey: 'delay_time',
         },
         {
           title: '二段延时',
-          width: 100,
+          align: 'center',
+          width: 120,
           ellipsis: true,
           colKey: 'delay_time2',
         },
         {
           title: '设备更新时间',
+          align: 'center',
           width: 200,
           ellipsis: true,
           colKey: 'time_dur',
@@ -926,12 +1097,12 @@ export default {
       rowClassName: (rowKey) => `${rowKey}-class`,
       // 与pagination对齐
       pagination: {
-        defaultPageSize: 20,
+        defaultPageSize: 10,
         total: 1,
         defaultCurrent: 1,
       },
       pagination1: {
-        defaultPageSize: 20,
+        defaultPageSize: 10,
         total: 1,
         defaultCurrent: 1,
       },
@@ -954,11 +1125,13 @@ export default {
   },
   watch: {
     'formData.status': function (newStatus) {
-      // 检查第一个下拉菜单的选定值并更新第二个下拉菜单的选项
+      // 重置 formData 中的其他字段
+      this.resetOtherFields();
+
+      // 检查第一个下拉菜单的选定值并更新其他字段
       if (newStatus === '1') {
         this.formData.code = 400;
-      }
-      if (newStatus === '2' || newStatus === '3' || newStatus === '4' || newStatus === '5') {
+      } else if (newStatus === '2' || newStatus === '3' || newStatus === '4' || newStatus === '5') {
         // 如果选择了"区操作"，显示第二个下拉菜单并更新其选项
         this.showSelect = true;
         this.showSelect1 = newStatus === '3';
@@ -980,14 +1153,259 @@ export default {
   mounted() {
     this.dataLoading = true;
     this.initMqtt();
-    setInterval(() => {
-      this.pagination.total = this.tableData.length;
-      this.pagination1.total = this.deviceData.length;
-    }, 100);
-
+    this.fetchData();
+    this.timerId = setInterval(() => {
+      if(this.isPolling){
+      this.fetchData();
+      }
+    }, 1000);
   },
   methods: {
-    // 更多功能-
+    /**
+     * 数据清除函数
+     */
+    // 数据清除
+    resetOtherFields() {
+      this.formData.device_name = '';
+      this.formData.area = '';
+      this.formData.number = '';
+      this.formData.cluster = '';
+
+      // 重置下拉菜单的显示状态
+      this.showSelect = false;
+      this.showSelect1 = false;
+      this.showSelect2 = false;
+      this.showSelect3 = false;
+    },
+
+    /**
+     *
+     * 信息读取函数 后端地址 http://localhost:8026/api/light_data/items
+     */
+    // 灯具信息读取
+    async fetchData() {
+      try {
+        let queryString = '';
+
+        if (this.selectedProject && this.selectedProject !== '全部项目') {
+          queryString += `?project=${encodeURIComponent(this.selectedProject)}`;
+        }
+
+        if (this.selectedAddress && this.selectedAddress !== '全部地区') {
+          queryString += queryString ? `&address=${encodeURIComponent(this.selectedAddress)}` : `?address=${encodeURIComponent(this.selectedAddress)}`;
+        }
+
+        const response = await axios.get(`http://localhost:8026/api/light_data/items${queryString}`);
+        this.lightData = response.data;
+        this.deviceData = response.data;
+
+        this.lightData.forEach(item => {
+          item.ConsumptionUpdate = this.formatTimestamp(item.ConsumptionUpdate);
+        });
+
+        this.deviceData = this.deviceData.filter((item, index, self) => {
+          const isDuplicate = self.findIndex(el => el.device_name === item.device_name) !== index;
+          return !isDuplicate;
+        });
+
+        this.DEVICE_NAME = [...new Set(this.deviceData.map(item => ({
+          label: item.device_name,
+          value: item.device_name,
+        })))];
+
+        this.pagination.total = this.lightData.length;
+        this.pagination1.total = this.deviceData.length;
+
+        this.dataLoading = false;
+      } catch (error) {
+        console.error('获取数据时出错', error);
+      }
+    },
+    /**
+     *
+     * 根据网关下拉选项更新区下拉选项值
+     */
+    async handleGatewayChange() {
+      // 获取过滤后的区的选项
+      this.AREA = [...new Set(this.lightData.filter(item => item.device_name === this.formData.device_name).map(item => ({
+        label: item.area,
+        value: item.area,
+      })))];
+
+      // 清空其他下拉菜单的选中值
+      this.formData.area = '';
+      this.formData.cluster = '';
+      this.formData.number = '';
+    },
+
+    /**
+     *
+     * 根据区下拉选项更新组，号下拉选项值
+     */
+    async handleAreaChange() {
+
+      // 获取过滤后的组的选项
+      this.CLUSTER = [...new Set(this.lightData.filter(item => item.device_name === this.formData.device_name && item.area === this.formData.area).map(item => ({
+        label: item.cluster,
+        value: item.cluster,
+      })))];
+
+      // 获取过滤后的号的选项
+      this.NUMBER = [...new Set(this.lightData.filter(item => item.device_name === this.formData.device_name && item.area === this.formData.area).map(item => ({
+        label: item.number,
+        value: item.number,
+      })))];
+
+      this.formData.cluster = '';
+      this.formData.number = '';
+    },
+    /**
+     *
+     * 查询函数
+     */
+    async handleSearch() {
+      try {
+        // 构建查询参数
+        const searchParams = {
+          area: this.searchData.area,
+          cluster: this.searchData.cluster,
+          number: this.searchData.number,
+        };
+
+        // 使用查询参数调用后端接口
+        const response = await axios.post('http://localhost:8026/api/light_data/search', searchParams);
+
+        // 将后端返回的数据存储到已有的数据集中
+        this.lightData = response.data;
+
+
+        this.lightData.forEach(item => {
+          item.ConsumptionUpdate = this.formatTimestamp(item.ConsumptionUpdate);
+        });
+
+        // 在已有数据上进行二次筛选
+        this.lightData = this.lightData.filter(item => {
+          return (
+            (!searchParams.area || item.area === searchParams.area) &&
+            (!searchParams.cluster || item.cluster === searchParams.cluster) &&
+            (!searchParams.number || item.number === searchParams.number)
+          );
+        });
+
+        // 更新分页总数等信息
+        this.pagination.total = this.lightData.length;
+
+        // 停止轮询
+        this.isPolling = false;
+
+      } catch (error) {
+        console.error('查询数据时出错', error);
+      }
+    },
+
+    /**
+     *
+     * 重置函数
+     */
+    resetSearch() {
+      // 重置查询条件
+      this.searchData.area = '';
+      this.searchData.cluster = '';
+      this.searchData.number = '';
+
+      // 重新开始轮询
+      this.isPolling = true;
+    },
+
+    /**
+     *
+     * 信息更新函数
+     */
+    // 灯具信息更新
+    async updateData(value, listName) {
+      try {
+        const updatePayload = {
+          device_name: this.formData.device_name,
+          area: this.formData.area,
+          cluster: this.formData.cluster,
+          number: this.formData.number,
+          [listName]: value,
+        };
+        console.log(updatePayload);
+        let url = `http://localhost:8026/api/light_data/items`;
+
+        if (this.formData.device_name !== undefined && this.formData.device_name !== null && this.formData.device_name !== '') {
+          url += `/${encodeURIComponent(this.formData.device_name)}`;
+        } else {
+          url += '/NA';
+        }
+
+        if (this.formData.area !== undefined && this.formData.area !== null && this.formData.area !== '') {
+          url += `/${encodeURIComponent(this.formData.area)}`;
+        } else {
+          url += '/NA';
+        }
+
+        if (this.formData.cluster !== undefined && this.formData.cluster !== null && this.formData.cluster !== '') {
+          url += `/${encodeURIComponent(this.formData.cluster)}`;
+        } else {
+          url += '/NA';
+        }
+
+        if (this.formData.number !== undefined && this.formData.number !== null && this.formData.number !== '') {
+          url += `/${encodeURIComponent(this.formData.number)}`;
+        } else {
+          url += '/NA';
+        }
+
+        console.log(url);
+        await axios.put(url, {data: updatePayload, listName}); // 发送 updateField 到后端
+
+        await this.fetchData();
+      } catch (error) {
+        console.error('更新数据时出错', error);
+      }
+    },
+
+    /**
+     *
+     * 时间数据处理函数
+     * 将时间数据处理成 年-月-日格式
+     */
+    formatTimestamp(timestamp) {
+      const date = new Date(timestamp);
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
+
+    /**
+     *
+     * @param uuid
+     * @returns {Promise<void>}
+     */
+    async deleteItem(uuid) {
+      try {
+        await axios.delete(`http://localhost:8026/api/light_data/items/${uuid}`);
+        await this.fetchData();
+        console.log('灯具删除成功', uuid);
+      } catch (error) {
+        console.error('Error deleting item', error);
+      }
+    },
+    handleDelete(row) {
+      console.log('正在删除行:', row);
+      // 处理删除操作
+      const {uuid} = row;
+      this.deleteItem(uuid);
+    },
+
+    /**
+     *
+     * @param mode
+     * @returns {string}
+     */
     getModeLabel(mode) {
       switch (mode) {
         case "1":
@@ -1036,22 +1454,17 @@ export default {
       this.deleteIdx = row.rowIndex;
       this.confirmVisible = true;
     },
-    moreFunctions(row) {
+    moreFunctions() {
       this.functionVisible = true;
-    },
-    onConfirmDelete() {
-      // 真实业务请发起请求
-      this.tableData.splice(this.deleteIdx, 1);
-      this.pagination.total = this.tableData.length;
-      this.confirmVisible = false;
-      this.$message.success('删除成功');
-      this.resetIdx();
     },
     onCancel() {
       this.resetIdx();
     },
     resetIdx() {
       this.deleteIdx = -1;
+    },
+    beforeDestroy() {
+      clearInterval(this.timerId);
     },
 
     /**
@@ -1110,12 +1523,10 @@ export default {
       })
       // 在订阅成功后更新 receivedMessages 数组
       this.client.on('message', function (topic, message, packet) {
-        this.handleReceivedMessage(topic, message, packet);
         console.log(`接收到消息，主题：${topic}, 消息：${message.toString()}`);
       }.bind(this));
 
       this.client1.on('message', function (topic, message, packet) {
-        this.handleReceivedMessage(topic, message, packet);
         console.log(`接收到消息，主题：${topic}, 消息：${message.toString()}`);
       }.bind(this));
     },
@@ -1163,85 +1574,6 @@ export default {
         return 'N/A' // 如果没有匹配到消息，返回 "N/A"
       }
     },
-    /**
-     * 数据处理
-     */
-    handleReceivedMessage(topic, message) {
-
-      // 解析 MQTT 消息
-      const mqttData = JSON.parse(message.toString());
-      // 去除空格并将十六进制字符串转换为十进制数字
-      const decimalNumber = parseInt(mqttData.params.value.number.replace(/\s/g, ""), 16);
-      // 选项 deviceNameOption
-      const deviceNameOption = {
-        label: mqttData.params.value.device_name,
-        value: mqttData.params.value.device_name,
-      };
-      if (!this.DEVICE_NAME.some(option => option.value === deviceNameOption.value)) {
-        this.DEVICE_NAME.unshift(deviceNameOption);
-      }
-      // 选项areaOption
-      const areaOption = {
-        label: mqttData.params.value.area,
-        value: mqttData.params.value.area,
-      };
-      if (!this.AREA.some(option => option.value === areaOption.value)) {
-        this.AREA.unshift(areaOption);
-      }
-      // 选项numberOption
-      const numberOption = {
-        label: mqttData.params.value.number,
-        value: mqttData.params.value.number,
-      };
-      if (!this.NUMBER.some(option => option.value === numberOption.value)) {
-        this.NUMBER.unshift(numberOption);
-      }
-      // 提取数据并添加到表格数据中
-      const rowData = {
-        uuid: mqttData.params.value.uuid,
-        area: mqttData.params.value.area,
-        cluster: mqttData.params.value.cluster,
-        number: decimalNumber,
-        scene_no: mqttData.params.value.scene_no,
-        light_mode: mqttData.params.value.light_mode,
-        energy_dur: mqttData.params.value.energy_dur,
-        device_name: mqttData.params.value.device_name,
-        power: mqttData.params.value.power,
-        ConsumptionUpdate: "",
-        current_bright: mqttData.params.value.current_bright,
-        high_bright: mqttData.params.value.high_bright,
-        standby_bright: mqttData.params.value.standby_bright,
-        current_cct: mqttData.params.value.current_cct,
-        delay_mode: mqttData.params.value.delay_mode,
-        delay_time: this.convertUnixTimestampToDateTime(mqttData.params.value.delay_time),
-        delay_time2: this.convertUnixTimestampToDateTime(mqttData.params.value.delay_time2),
-        time_dur: this.convertUnixTimestampToDateTime(mqttData.params.value.time_dur),
-        customer: "坤科节能",
-      };
-      // 检查tableData中是否已经存在相似的条目
-      const existingIndex = this.tableData.findIndex(item => item.uuid === rowData.uuid);
-      if (existingIndex !== -1) {
-        // 更新现有条目
-        this.$set(this.tableData, existingIndex, rowData);
-        console.log("有相同的数据")
-      } else {
-        // 将新条目添加到tableData
-        console.log("不同的数据 进行添加")
-        this.tableData.unshift(rowData);
-      }
-
-      const existingIndex1 = this.deviceData.findIndex(item => item.device_name === rowData.device_name);
-      if (existingIndex1 !== -1) {
-        // 更新现有条目
-        this.$set(this.deviceData, existingIndex1, rowData);
-        console.log("有相同的数据")
-      } else {
-        // 将新条目添加到tableData
-        console.log("不同的数据 进行添加")
-        this.deviceData.unshift(rowData);
-      }
-      this.dataLoading = false;
-    },
   },
 };
 </script>
@@ -1277,5 +1609,11 @@ export default {
 
 .t-button + .t-button {
   margin-left: var(--td-comp-margin-s);
+}
+
+.t-table td.custom-cell-class-name {
+  color: orange;
+  font-size: 18px;
+  font-weight: bold;
 }
 </style>

@@ -1,5 +1,6 @@
 <template>
   <t-row :gutter="[16, 16]">
+
     <t-col :xs="6" :xl="3" v-for="(item, index) in panelList" :key="item.title">
       <t-card
         :bordered="false"
@@ -24,10 +25,10 @@
             :style="{ width: `${resizeTime * 120}px`, height: `${resizeTime * 42}px` }"
           ></div>
           <span v-else-if="index === 2" :style="{ marginTop: `-24px` }">
-            <usergroup-icon />
+            <ErrorIcon />
           </span>
           <span v-else :style="{ marginTop: '-24px' }">
-            <file-icon />
+          <WifiIcon />
           </span>
         </div>
       </t-card>
@@ -38,7 +39,7 @@
 import { LineChart, BarChart } from 'echarts/charts';
 import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import { UsergroupIcon, FileIcon, ChevronRightIcon } from 'tdesign-icons-vue';
+import { UsergroupIcon, FileIcon, ChevronRightIcon,ErrorIcon,WifiIcon } from 'tdesign-icons-vue';
 import { mapState } from 'vuex';
 
 import Trend from '@/components/trend/index.vue';
@@ -56,6 +57,8 @@ export default {
     UsergroupIcon,
     FileIcon,
     ChevronRightIcon,
+    ErrorIcon,
+    WifiIcon,
   },
   data() {
     return {

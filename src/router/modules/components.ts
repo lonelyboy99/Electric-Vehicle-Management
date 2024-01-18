@@ -1,62 +1,101 @@
-import { ViewModuleIcon, Edit1Icon, LayersIcon } from 'tdesign-icons-vue';
+import {
+  ViewModuleIcon,
+  Edit1Icon,
+  UsergroupIcon,
+  LinkUnlinkIcon,
+  LayersIcon,
+} from 'tdesign-icons-vue';
 import Layout from '@/layouts/index.vue';
 
 export default [
   {
-    path: '/list',
-    name: 'list',
+    path: '/custom',
+    name: 'custom',
     component: Layout,
-    redirect: '/list/base',
-    meta: { title: '故障维护', icon: ViewModuleIcon },
+    redirect: '/custom/base',
+    meta: { title: '客户管理', icon: UsergroupIcon },
+    children: [
+      {
+        path: 'deploy',
+        name: 'CustomDeploy',
+        component: () => import('@/pages/custom/deploy/index.vue'),
+        meta: { title: '客户管理' },
+      },
+      {
+        path: 'base',
+        name: 'CustomBase',
+        component: () => import('@/pages/custom/base/index.vue'),
+        meta: { title: '资产管理' },
+      },
+    ],
+  },
+  {
+    path: '/system',
+    name: 'system',
+    component: Layout,
+    redirect: '/system/base',
+    meta: { title: '系统配置', icon: ViewModuleIcon },
     children: [
       {
         path: 'base',
-        name: 'ListBase',
-        component: () => import('@/pages/list/base/index.vue'),
+        name: 'SystemBase',
+        component: () => import('@/pages/system/base/index.vue'),
         meta: { title: '灯具信息' },
       },
       {
         path: 'tree',
-        name: 'ListTree',
-        component: () => import('@/pages/list/tree/index.vue'),
+        name: 'SystemTree',
+        component: () => import('@/pages/system/tree/index.vue'),
         meta: { title: '操作配置' },
       },
     ],
   },
   {
-    path: '/form',
+    path: '/fault',
+    name: 'fault',
+    component: Layout,
+    meta: { title: '故障维护', icon: LinkUnlinkIcon },
+    children: [
+      {
+        path: '', // 不设置子路径
+        name: 'FaultBase',
+        component: () => import('@/pages/fault/index.vue'),
+      },
+    ],
+  },
+  {
+    path: '/work',
     name: 'form',
     component: Layout,
-    redirect: '/form/base',
+    redirect: '/work/base',
     meta: { title: '工单系统', icon: Edit1Icon },
     children: [
       {
         path: 'base',
         name: 'FormBase',
-        component: () => import('@/pages/form/base/index.vue'),
-        meta: { title: '工单录入' },
+        component: () => import('@/pages/work/base/index.vue'),
+        meta: { title: '工单发布' },
       },
       {
         path: 'filter',
         name: 'ListFilter',
-        component: () => import('@/pages/form/filter/index.vue'),
+        component: () => import('@/pages/work/filter/index.vue'),
         meta: { title: '工单信息' },
       },
     ],
   },
   {
-    path: '/detail',
-    name: 'detail',
+    path: '/count',
+    name: 'count',
     component: Layout,
-    redirect: '/detail/base',
-    meta: { title: '客户管理', icon: LayersIcon },
+    redirect: '/count', // 直接重定向到 count 页面
+    meta: { title: '统计分析', icon: LayersIcon },
     children: [
       {
-        path: 'base',
-        name: 'DetailBase',
-        component: () => import('@/pages/detail/base/index.vue'),
-        meta: { title: '基础详情页' },
+        path: '', // 不设置子路径
+        name: 'CountBase',
+        component: () => import('@/pages/count/index.vue'),
       },
     ],
-  },
+  }
 ];

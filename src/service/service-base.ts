@@ -1,5 +1,7 @@
 import {TdBaseTableProps} from 'tdesign-vue';
 import mqtt from 'mqtt';
+import CommonTable from "@/pages/system/components/CommonTable.vue";
+import axios from "axios";
 
 interface DashboardPanel {
   title: string;
@@ -32,25 +34,25 @@ interface productItem {
 
 export const PANE_LIST: Array<DashboardPanel> = [
   {
-    title: '总灯数',
-    number: '100个',
+    title: '总灯数（个）',
+    number: 'N/A',
     leftType: 'echarts-line',
   },
   {
     title: '本周能耗总数（Kw‧h）',
-    number: '1000',
+    number: 'N/A',
     downTrend: '20.5%',
     leftType: 'echarts-bar',
   },
   {
-    title: '预警数',
-    number: '1126',
+    title: '预警数（个数）',
+    number: 'N/A',
     upTrend: '30.5%',
     leftType: 'icon-usergroup',
   },
   {
     title: 'MQTT连接状况',
-    number: '',
+    number: 'N/A',
     downTrend: '40.5%',
     leftType: 'icon-file-paste',
   },
@@ -188,7 +190,7 @@ export const PANE_LIST_DATA: Array<Gatewaydata> = [
 /**
  * MQTT部分
  */
-export class MqttConnection {
+export class DataObtain {
   client: mqtt.MqttClient;
   client1: mqtt.MqttClient;
   mqttConnectionStatus: string;
@@ -198,6 +200,7 @@ export class MqttConnection {
   lightingData: Array<{ time: string; value: string }> = [];
   powerData: Array<{ time: string; value: string }> = [];
   tableData: Array<any> = [];
+  lightData: Array<any> = [];
 
 
   constructor() {
@@ -209,13 +212,50 @@ export class MqttConnection {
     this.humidityData = [];
     this.lightingData = [];
     this.powerData = [];
+    this.lightData = [];
     // 调用initMqtt方法
     this.initMqtt();
     setInterval(() => {
-      this.updateNumber()
-
+      this.fetchData()
     }, 1000);
   }
+  /**
+   *
+   * 信息读取函数 后端地址 http://localhost:8026/api/light_data/items
+   */
+  // 信息读取
+  async fetchData() {
+    try {
+      const response = await axios.get(`http://localhost:8026/api/light_data/items`);
+      this.lightData = response.data;
+
+      // 使用 reduce 方法计算所有 "power" 属性值的总和
+      const totalPower = this.lightData.reduce((accumulator, currentValue) => {
+        const powerValue = parseFloat(currentValue.power) || 0; // 将 "power" 转换为数字，如果无效则为 0
+        return accumulator + powerValue;
+      }, 0);
+
+      const currentTime = new Date();
+
+      // 更新 PANE_LIST[0].number 和 PANE_LIST[1].number
+      PANE_LIST[0].number = this.lightData.length;
+      PANE_LIST[1].number = totalPower;
+
+      // 计算与当前时间差两小时的设备数量
+      const devicesWithinTwoHours = this.lightData.filter(item => {
+        const consumptionUpdateTime = new Date(item.ConsumptionUpdate);
+        const timeDifference = currentTime.getTime() - consumptionUpdateTime.getTime();
+        return timeDifference > 2 * 60 * 60 * 1000;
+      });
+
+      // 更新 PANE_LIST[2].number
+      PANE_LIST[2].number = devicesWithinTwoHours.length;
+
+    } catch (error) {
+      console.error('获取数据时出错', error);
+    }
+  }
+
 
   /**
    * MQTT连接函数
@@ -352,9 +392,8 @@ export class MqttConnection {
     PANE_LIST_DATA[2].number = this.getLatestValueByTopic('online/emqx', 'light');
     PANE_LIST_DATA[3].number = this.getLatestValueByTopic('online/emqx', 'power');
     PANE_LIST[3].number = this.mqttConnectionStatus;
-    PANE_LIST[0].number = this.tableData.length;
   }
 }
 
 // 实例化类
-new MqttConnection();
+new DataObtain();

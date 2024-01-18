@@ -41,7 +41,7 @@ router.beforeEach(async (to, from, next) => {
       }
     }
   } else {
-    /* white list router */
+    /* white system router */
     if (whiteListRouters.indexOf(to.path) !== -1) {
       next();
     } else {

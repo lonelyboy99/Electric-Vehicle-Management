@@ -3,6 +3,9 @@ import VueRouter from 'vue-router';
 import baseRouters from './modules/base';
 import componentsRouters from './modules/components';
 import othersRouters from './modules/others';
+import Index from '@/pages/system/tree/index.vue';
+import {Layout} from "tdesign-vue";
+
 
 const env = import.meta.env.MODE || 'development';
 
@@ -18,7 +21,7 @@ const defaultRouterList = [
   },
   {
     path: '*',
-    redirect: '/dashboard/base',
+    redirect: '/home/base',
   },
   ...asyncRouterList,
 ];

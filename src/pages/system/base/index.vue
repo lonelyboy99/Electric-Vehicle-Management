@@ -4,20 +4,20 @@
       <t-form>
         <t-row justify="space-between">
           <t-space>
-          <t-col>
-            <t-form-item label="项目选择" name="status">
-              <t-select
-                v-model="selectedProject"
-                :options="PROJECT_SELECTION"
-                class="form-item-content"
-                placeholder="请选择操作类型"
-                @change="handleSelectChange"
-              />
-            </t-form-item>
-          </t-col>
-          <t-col>
-            <t-button variant="base" @click="handleNav('/list/tree')"> 操作配置</t-button>
-          </t-col>
+            <t-col>
+              <t-form-item label="项目选择" name="status">
+                <t-select
+                  v-model="selectedProject"
+                  :options="PROJECT_SELECTION"
+                  class="form-item-content"
+                  placeholder="请选择操作类型"
+                  @change="handleSelectChange"
+                />
+              </t-form-item>
+            </t-col>
+            <t-col>
+              <t-button variant="base" @click="handleNav('/system/tree')"> 操作配置</t-button>
+            </t-col>
           </t-space>
         </t-row>
       </t-form>
@@ -30,8 +30,10 @@
           :hover="hover"
           :loading="dataLoading"
           :pagination="pagination"
+          :expandOnRowClick="true"
           :row-key="rowKey"
           :selected-row-keys="selectedRowKeys"
+          :stripe="true"
           :verticalAlign="verticalAlign"
           @change="rehandleChange"
           @page-change="rehandlePageChange"
@@ -44,22 +46,15 @@
 </template>
 <script lang="ts">
 import Vue from 'vue';
-import {SearchIcon} from 'tdesign-icons-vue';
-import Trend from '@/components/trend/index.vue';
 import {prefix} from '@/config/global';
 import axios from "axios";
-import {PROJECT_SELECTION,} from '@/constants';
 
 export default Vue.extend({
   name: 'ListBase',
-  components: {
-    SearchIcon,
-    Trend,
-  },
   data() {
     return {
       selectedProject: '',
-      PROJECT_SELECTION,
+      PROJECT_SELECTION: [],
       prefix,
       dataLoading: false,
       receivedMessages: [],
@@ -158,6 +153,22 @@ export default Vue.extend({
   methods: {
     async fetchData() {
       try {
+        const response1 = await axios.get('http://localhost:8026/api/light_data/items');
+        this.lightData = response1.data;
+        // 遍历lightData数组，去重，相同项目名称的只保留一个
+        this.lightData = this.lightData.filter((item, index, self) => {
+          const isDuplicate = self.findIndex(el => el.project === item.project) !== index;
+          return !isDuplicate;
+        });
+        // 项目名称数组
+        this.PROJECT_SELECTION = [
+          { label: '全部项目', value: '全部项目' },
+          ...new Set(this.lightData.map(item => ({
+            label: item.project,
+            value: item.project,
+          })))
+        ];
+
         let params = {};
         // 如果选中的项目不是 '全部项目'，则设置筛选参数
         if (this.selectedProject !== '全部项目') {
@@ -167,7 +178,7 @@ export default Vue.extend({
         }
 
         // 使用筛选参数进行API请求
-        const response = await axios.get('http://localhost:3002/api/light_data/items', {params});
+        const response = await axios.get('http://localhost:8026/api/light_data/items', {params});
 
         // 使用筛选后的结果更新组件数据
         this.data = response.data;
@@ -206,10 +217,10 @@ export default Vue.extend({
       console.log('统一Change', changeParams, triggerAndData);
     },
     handleClickDetail() {
-      this.$router.push('/detail/base');
+      this.$router.push('/custom/base');
     },
     handleSetupContract() {
-      this.$router.push('/form/base');
+      this.$router.push('/work/base');
     },
     handleClickDelete(row: { rowIndex: any }) {
       this.deleteIdx = row.rowIndex;

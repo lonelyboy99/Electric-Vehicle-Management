@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import { getChartListColor } from '@/utils/color';
 import { getRandomArray } from '@/utils/charts';
 
-/** 首页 dashboard 折线图 */
+/** 首页 home 折线图 */
 export function constructInitDashboardDataset(type: string) {
   const dateArray: Array<string> = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
   const datasetAxis = {
