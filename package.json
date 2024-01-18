@@ -48,7 +48,7 @@
     "@types/uuid": "^9.0.7",
     "@types/vue-color": "^2.4.3",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
-    "@typescript-eslint/parser": "^4.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
     "commitizen": "^4.2.3",
     "eslint": "^7.22.0",
     "eslint-config-airbnb-base": "^14.2.1",
@@ -75,6 +75,13 @@
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
   "lint-staged": {
