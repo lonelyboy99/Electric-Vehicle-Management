@@ -21,7 +21,7 @@
           <template #op="slotProps">
             <a class="t-button-link" @click="selectedFunction(slotProps.row)">查看</a>
             <a class="t-button-link" @click="editFunction(slotProps.row)">编辑</a>
-            <a class="t-button-link">操作配置</a>
+            <a class="t-button-link" @click="handleNav('/system/tree', slotProps.row)">操作配置</a>
             <t-popconfirm :on-confirm="() => handleDelete(slotProps.row)"
                           :popupProps="{ placement: 'top' }"
                           content="确认删除项目吗"
@@ -34,81 +34,81 @@
         </t-table>
       </div>
     </t-card>
-      <t-dialog
-        :confirmBtn="null"
-        :cancelBtn="null"
-        :visible.sync="detailVisible"
-        :header="dialogHeader"
-        top="4%"
-        width="1000px"
-      >
-        <t-tabs>
-          <t-tab-panel label="灯具">
-            <t-table
-              :columns="columns1"
-              :data="selectedProjectData"
-              :headerAffixProps="{ offsetTop, container: getContainer }"
-              :headerAffixedTop="true"
-              :hover="hover"
-              :loading="dataLoading"
-              :pagination="pagination1"
-              :rowKey="rowKey1"
-              :verticalAlign="verticalAlign"
-              @change="rehandleChange"
-              @page-change="rehandlePageChange"
-            >
-            </t-table>
-          </t-tab-panel>
-          <t-tab-panel label="网关" value="second">
-            <t-table
-              :columns="columns2"
-              :data="selectedDeviceData"
-              :headerAffixedTop="true"
-              :hover="hover"
-              :loading="dataLoading"
-              :pagination="pagination2"
-              :rowKey="rowKey2"
-              :verticalAlign="verticalAlign"
-              @change="rehandleChange"
-              @page-change="rehandlePageChange"
-            >
-            </t-table>
-          </t-tab-panel>
-        </t-tabs>
-      </t-dialog>
     <t-dialog
-      :confirmBtn="null"
       :cancelBtn="null"
+      :confirmBtn="null"
+      :header="dialogHeader"
+      :visible.sync="detailVisible"
+      top="4%"
+      width="1000px"
+    >
+      <t-tabs>
+        <t-tab-panel label="灯具">
+          <t-table
+            :columns="columns1"
+            :data="selectedProjectData"
+            :headerAffixProps="{ offsetTop, container: getContainer }"
+            :headerAffixedTop="true"
+            :hover="hover"
+            :loading="dataLoading"
+            :pagination="pagination1"
+            :rowKey="rowKey1"
+            :verticalAlign="verticalAlign"
+            @change="rehandleChange"
+            @page-change="rehandlePageChange"
+          >
+          </t-table>
+        </t-tab-panel>
+        <t-tab-panel label="网关" value="second">
+          <t-table
+            :columns="columns2"
+            :data="selectedDeviceData"
+            :headerAffixedTop="true"
+            :hover="hover"
+            :loading="dataLoading"
+            :pagination="pagination2"
+            :rowKey="rowKey2"
+            :verticalAlign="verticalAlign"
+            @change="rehandleChange"
+            @page-change="rehandlePageChange"
+          >
+          </t-table>
+        </t-tab-panel>
+      </t-tabs>
+    </t-dialog>
+    <t-dialog
+      :cancelBtn="null"
+      :confirmBtn="null"
       :visible.sync="editVisible"
       header="修改项目"
       top="4%"
       width="500px"
     >
-        <t-form style="margin-top: 20px" labelAlign="left">
-          <t-form-item label="项目名称">
-            <t-input />
-          </t-form-item>
-          <t-form-item label="项目所在地">
-            <t-input  placeholder="请输入项目地址"/>
-          </t-form-item>
-          <t-form-item label="项目描述">
-            <t-input  placeholder="请输入项目描述"/>
-          </t-form-item>
-          <t-form-item label="紧急联系人" >
-            <t-space>
-            <t-input  placeholder="姓名"/>
-            <t-input  placeholder="电话"/>
-            </t-space>
-          </t-form-item>
-          <t-form-item style="margin-left: 150px">
-            <t-space size="30px">
+      <t-form labelAlign="left" style="margin-top: 20px">
+        <t-form-item label="项目名称">
+          <t-input/>
+        </t-form-item>
+        <t-form-item label="项目所在地">
+          <t-input placeholder="请输入项目地址"/>
+        </t-form-item>
+        <t-form-item label="项目描述">
+          <t-input placeholder="请输入项目描述"/>
+        </t-form-item>
+        <t-form-item label="紧急联系人">
+          <t-space>
+            <t-input placeholder="姓名"/>
+            <t-input placeholder="电话"/>
+          </t-space>
+        </t-form-item>
+        <t-form-item style="margin-left: 150px">
+          <t-space size="30px">
             <t-button>确定</t-button>
             <t-button>取消</t-button>
-            </t-space>
-          </t-form-item>
-        </t-form>
+          </t-space>
+        </t-form-item>
+      </t-form>
     </t-dialog>
-    </div>
+  </div>
 </template>
 <script lang="ts">
 import Vue from 'vue';
@@ -138,7 +138,7 @@ export default Vue.extend({
           title: '项目名称',
           width: 'auto',
           ellipsis: true,
-          colKey: '1',
+          colKey: 'project',
         },
         {
           title: '省市',
@@ -157,18 +157,6 @@ export default Vue.extend({
           width: 'auto',
           ellipsis: true,
           colKey: '3',
-        },
-        {
-          title: '灯控用户数',
-          width: 'auto',
-          ellipsis: true,
-          colKey: '4',
-        },
-        {
-          title: '所属项目',
-          width: 'auto',
-          ellipsis: true,
-          colKey: 'project',
         },
         {
           align: 'center',
@@ -347,7 +335,6 @@ export default Vue.extend({
       this.fetchData();
 
       const project = row.project;
-
       // 筛选相同项目的设备数据
       this.selectedProjectData = this.originalData.filter(item => item.project === project);
 
@@ -395,8 +382,18 @@ export default Vue.extend({
     resetIdx() {
       this.deleteIdx = -1;
     },
-    handleNav(url) {
-      this.$router.push(url);
+    handleNav(url, row) {
+      if (row) {
+        console.log(row.project);
+        // 使用 selectedProject 作为路由参数导航到指定的 URL
+        this.$router.push({
+          path: url,
+          query: {selectedProject: row.project},
+        });
+      } else {
+        // 处理当找不到 selectedRow 的情况
+        console.error('未找到选定行。');
+      }
     },
     beforeDestroy() {
       clearInterval(this.timerId);

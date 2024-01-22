@@ -1,6 +1,6 @@
-import dayjs from 'dayjs';
-import { getChartListColor } from '@/utils/color';
-import { getDateArray, getRandomArray } from '@/utils/charts';
+import dayjs from "dayjs"
+import { getChartListColor } from "@/utils/color"
+import { getDateArray, getRandomArray } from "@/utils/charts"
 
 /**
  * 散点图数据
@@ -13,26 +13,26 @@ export function getScatterDataSet({
   placeholderColor,
   borderColor,
 }: { dateTime?: Array<string> } & Record<string, string>): any {
-  const divideNum = 40;
-  const timeArray = [];
-  const inArray = [];
-  const outArray = [];
+  const divideNum = 40
+  const timeArray = []
+  const inArray = []
+  const outArray = []
   for (let i = 0; i < divideNum; i++) {
     // const [timeArray, inArray, outArray] = dataset;
     if (dateTime.length > 0) {
-      const dateAbsTime: number = (new Date(dateTime[1]).getTime() - new Date(dateTime[0]).getTime()) / divideNum;
-      const endTime: number = new Date(dateTime[0]).getTime() + dateAbsTime * i;
-      timeArray.push(dayjs(endTime).format('MM-DD'));
+      const dateAbsTime: number = (new Date(dateTime[1]).getTime() - new Date(dateTime[0]).getTime()) / divideNum
+      const endTime: number = new Date(dateTime[0]).getTime() + dateAbsTime * i
+      timeArray.push(dayjs(endTime).format("MM-DD"))
     } else {
       timeArray.push(
         dayjs()
-          .subtract(divideNum - i, 'day')
-          .format('MM-DD'),
-      );
+          .subtract(divideNum - i, "day")
+          .format("MM-DD"),
+      )
     }
 
-    inArray.push(getRandomArray().toString());
-    outArray.push(getRandomArray().toString());
+    inArray.push(getRandomArray().toString())
+    outArray.push(getRandomArray().toString())
   }
 
   return {
@@ -51,7 +51,7 @@ export function getScatterDataSet({
       },
     },
     yAxis: {
-      type: 'value',
+      type: "value",
       // splitLine: { show: false},
       axisLabel: {
         color: placeholderColor,
@@ -75,19 +75,19 @@ export function getScatterDataSet({
       },
     },
     tooltip: {
-      trigger: 'item',
+      trigger: "item",
     },
     grid: {
-      top: '5px',
-      left: '25px',
-      right: '5px',
-      bottom: '60px',
+      top: "5px",
+      left: "25px",
+      right: "5px",
+      bottom: "60px",
     },
     legend: {
-      left: 'center',
-      bottom: '0',
-      orient: 'horizontal', // legend 横向布局。
-      data: ['按摩仪', '咖啡机'],
+      left: "center",
+      bottom: "0",
+      orient: "horizontal", // legend 横向布局。
+      data: ["按摩仪", "咖啡机"],
       itemHeight: 8,
       itemWidth: 8,
       textStyle: {
@@ -97,19 +97,19 @@ export function getScatterDataSet({
     },
     series: [
       {
-        name: '按摩仪',
+        name: "按摩仪",
         symbolSize: 10,
         data: outArray.reverse(),
-        type: 'scatter',
+        type: "scatter",
       },
       {
-        name: '咖啡机',
+        name: "咖啡机",
         symbolSize: 10,
         data: inArray.concat(inArray.reverse()),
-        type: 'scatter',
+        type: "scatter",
       },
     ],
-  };
+  }
 }
 
 /** 折线图数据 */
@@ -118,31 +118,31 @@ export function getFolderLineDataSet({
   placeholderColor,
   borderColor,
 }: { dateTime?: Array<string> } & Record<string, string>) {
-  let dateArray: Array<string> = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  let dateArray: Array<string> = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
   if (dateTime.length > 0) {
-    const divideNum = 7;
-    dateArray = getDateArray(dateTime, divideNum);
+    const divideNum = 7
+    dateArray = getDateArray(dateTime, divideNum)
   }
   return {
     color: getChartListColor(),
     grid: {
-      top: '5%',
-      right: '10px',
-      left: '30px',
-      bottom: '60px',
+      top: "5%",
+      right: "10px",
+      left: "30px",
+      bottom: "60px",
     },
     legend: {
-      left: 'center',
-      bottom: '0',
-      orient: 'horizontal', // legend 横向布局。
-      data: ['当期功率', '同期功率'],
+      left: "center",
+      bottom: "0",
+      orient: "horizontal", // legend 横向布局。
+      data: ["当期功率", "同期功率"],
       textStyle: {
         fontSize: 12,
         color: placeholderColor,
       },
     },
     xAxis: {
-      type: 'category',
+      type: "category",
       data: dateArray,
       boundaryGap: false,
       axisLabel: {
@@ -156,7 +156,7 @@ export function getFolderLineDataSet({
       },
     },
     yAxis: {
-      type: 'value',
+      type: "value",
       axisLabel: {
         color: placeholderColor,
       },
@@ -167,15 +167,15 @@ export function getFolderLineDataSet({
       },
     },
     tooltip: {
-      trigger: 'item',
+      trigger: "item",
     },
     series: [
       {
         showSymbol: true,
-        symbol: 'circle',
+        symbol: "circle",
         symbolSize: 8,
-        name: '当期功率',
-        stack: '总量',
+        name: "当期功率",
+        stack: "总量",
         data: [
           getRandomArray(),
           getRandomArray(),
@@ -185,7 +185,7 @@ export function getFolderLineDataSet({
           getRandomArray(),
           getRandomArray(),
         ],
-        type: 'line',
+        type: "line",
         itemStyle: {
           normal: {
             borderColor,
@@ -195,10 +195,10 @@ export function getFolderLineDataSet({
       },
       {
         showSymbol: true,
-        symbol: 'circle',
+        symbol: "circle",
         symbolSize: 8,
-        name: '同期功率',
-        stack: '总量',
+        name: "同期功率",
+        stack: "总量",
         data: [
           getRandomArray(),
           getRandomArray(),
@@ -208,7 +208,7 @@ export function getFolderLineDataSet({
           getRandomArray(),
           getRandomArray(),
         ],
-        type: 'line',
+        type: "line",
         itemStyle: {
           normal: {
             borderColor,
@@ -217,5 +217,5 @@ export function getFolderLineDataSet({
         },
       },
     ],
-  };
+  }
 }

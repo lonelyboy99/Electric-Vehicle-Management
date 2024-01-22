@@ -1,46 +1,46 @@
-import VueRouter from 'vue-router';
+import VueRouter from "vue-router"
 
-import baseRouters from './modules/base';
-import componentsRouters from './modules/components';
-import othersRouters from './modules/others';
-import Index from '@/pages/system/tree/index.vue';
-import {Layout} from "tdesign-vue";
+import baseRouters from "./modules/base"
+import componentsRouters from "./modules/components"
+import othersRouters from "./modules/others"
+import Index from "@/pages/system/tree/index.vue"
+import {Layout} from "tdesign-vue"
 
 
-const env = import.meta.env.MODE || 'development';
+const env = import.meta.env.MODE || "development"
 
 // 存放动态路由
-export const asyncRouterList = [...baseRouters, ...componentsRouters, ...othersRouters];
+export const asyncRouterList = [...baseRouters, ...componentsRouters, ...othersRouters]
 
 // 存放固定的路由
 const defaultRouterList = [
   {
-    path: '/login',
-    name: 'login',
-    component: () => import('@/pages/login/index.vue'),
+    path: "/login",
+    name: "login",
+    component: () => import("@/pages/login/index.vue"),
   },
   {
-    path: '*',
-    redirect: '/home/base',
+    path: "*",
+    redirect: "/home/base",
   },
   ...asyncRouterList,
-];
+]
 
 const createRouter = () =>
   new VueRouter({
-    mode: 'history',
-    base: env === 'site' ? '/starter/vue/' : null,
+    mode: "history",
+    base: env === "site" ? "/starter/vue/" : null,
     routes: defaultRouterList,
     scrollBehavior() {
-      return { x: 0, y: 0 };
+      return { x: 0, y: 0 }
     },
-  });
+  })
 
-const router = createRouter();
+const router = createRouter()
 
 export function resetRouter() {
-  const newRouter = createRouter();
-  router.matcher = newRouter.matcher; // reset router
+  const newRouter = createRouter()
+  router.matcher = newRouter.matcher // reset router
 }
 
-export default router;
+export default router

@@ -217,6 +217,7 @@ export default Vue.extend({
     getContainer() {
       return document.querySelector('.tdesign-starter-layout');
     },
+    // 页面切换函数
     rehandlePageChange(curr, pageInfo) {
       console.log('分页变化', curr, pageInfo);
     },
@@ -239,6 +240,7 @@ export default Vue.extend({
     handleNav(url) {
       this.$router.push(url);
     },
+    // 销毁定时
     beforeDestroy() {
       clearInterval(this.timerId);
     },

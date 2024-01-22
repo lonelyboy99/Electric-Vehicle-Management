@@ -81,6 +81,7 @@
                   v-model="formData.fin_date"
                   :style="{ width: '322px' }"
                   mode="date"
+                  placeholder="不填默认签订后三天"
                   separator="/"
                   theme="primary"
                 />
@@ -142,7 +143,7 @@ const FORM_RULES = {
   build_man: [{required: true, message: '请输入创建人', type: 'error'}],
   priority: [{required: true, message: '请选择优先级', type: 'error'}],
   signDate: [{required: true, message: '请选择日期', type: 'error'}],
-  fin_date: [{required: true, message: '请选择日期', type: 'error'}],
+  // fin_date: [{required: true, message: '请选择日期', type: 'error'}],
 };
 
 export default {
@@ -168,7 +169,7 @@ export default {
         type: [{required: true, message: '请选择工单类型', type: 'error'}],
         signDate: [{required: true, message: '请选择日期', type: 'error'}],
         startDate: [{required: true, message: '请选择日期', type: 'error'}],
-        endDate: [{required: true, message: '请选择日期', type: 'error'}],
+        // endDate: [{required: true, message: '请选择日期', type: 'error'}],
       },
     };
   },
@@ -207,7 +208,8 @@ export default {
           const updatedBuildDate = build_date ? build_date : new Date().toISOString().split('T')[0];
           // 判断 head 是否为空，如果为空则设置为 build_man，否则保持不变
           const updatedHead = head ? head : build_man;
-
+          // 判断 fin_date 是否为空，如果为空则设置为 build_date 往后三天
+          const updatedFinDate = fin_date ? fin_date : addDays(updatedBuildDate, 3);
           // 准备要发送到请求体中的数据对象
           const dataToCreate = {
             id: id,
@@ -215,23 +217,28 @@ export default {
             build_man: build_man,
             state: '未承接',
             build_date: updatedBuildDate,
-            fin_date: fin_date,
+            fin_date: updatedFinDate,
             priority: priority,
             type: type,
             head: updatedHead,
             notes: notes,
-            // 根据你的数据结构添加更多属性
           };
+          // 往后三天的辅助函数
+          function addDays(dateString, days) {
+            const date = new Date(dateString);
+            date.setDate(date.getDate() + days);
+            return date.toISOString().split('T')[0];
+          }
           console.log(dataToCreate);
           // 发送创建项目的 HTTP 请求
           const response = await axios.post(`http://localhost:8026/api/work_order/items`, { data: dataToCreate });
 
           // 处理响应，显示成功消息等
-          this.$message.success(response.data);
+          await this.$message.success(response.data);
 
         } catch (error) {
           // 处理错误，显示错误消息等
-          this.$message.error('创建项目时发生错误');
+          await this.$message.error('创建项目时发生错误');
         }
       }
     }

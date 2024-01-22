@@ -12,7 +12,7 @@
       <t-row>
         <t-col :span="10">
           <t-row :gutter="[16, 24]">
-            <t-col :flex="1">
+            <t-col>
               <t-form-item label="区" name="name">
                 <t-input
                   v-model="searchData.area"
@@ -23,7 +23,7 @@
                 />
               </t-form-item>
             </t-col>
-            <t-col :flex="1">
+            <t-col>
               <t-form-item label="组" name="status">
                 <t-input
                   v-model="searchData.cluster"
@@ -34,7 +34,7 @@
                 />
               </t-form-item>
             </t-col>
-            <t-col :flex="1">
+            <t-col>
               <t-form-item label="号" name="no">
                 <t-input
                   v-model="searchData.number"
@@ -130,10 +130,10 @@
               </t-form-item>
             </t-col>
             <t-col>
-              <t-button variant="base" @click="sendMqttMessage('setLightMode','常亮');updateData('常亮','light_mode')">
+              <t-button variant="base" @click="sendMqttMessage('setLightMode','ChangLiang');updateData('常亮','light_mode')">
                 常亮
               </t-button>
-              <t-button variant="base" @click="sendMqttMessage('setLightMode','常灭');updateData('常灭','light_mode')">
+              <t-button variant="base" @click="sendMqttMessage('setLightMode','ChangMie');updateData('常灭','light_mode')">
                 常灭
               </t-button>
               <t-button variant="base" @click="sendMqttMessage('blink','闪一闪')">闪一闪</t-button>
@@ -150,7 +150,7 @@
     <t-tabs>
       <t-tab-panel>
         <template #label>
-          <icon name="lightbulb" style="margin-right: 4px"/>
+          <icon name="wallet" style="margin-right: 4px"/>
           灯具
         </template>
         <t-table
@@ -180,7 +180,7 @@
       </t-tab-panel>
       <t-tab-panel value="second">
         <template #label>
-          <icon name="system-application" style="margin-right: 4px"/>
+          <icon name="server" style="margin-right: 4px"/>
           网关
         </template>
         <t-table
@@ -610,7 +610,7 @@
           </t-tab-panel>
           <t-tab-panel value="number">
             <template #label>
-              <icon name="lightbulb-circle" style="margin-right: 4px"/>
+              <icon name="edit-1" style="margin-right: 4px"/>
               设备编号
             </template>
             <t-tabs :value="value2" placement="left" style="margin-top: 20px"
@@ -787,7 +787,7 @@
 </template>
 <script>
 import {prefix} from '@/config/global';
-import {Icon} from 'tdesign-icons-vue';
+import {Icon, IconFont} from 'tdesign-icons-vue';
 
 import {
   LIGHT_CONTROL,
@@ -800,6 +800,7 @@ export default {
   name: 'list-table',
   components: {
     Icon,
+    IconFont,
   },
   props: {
     selectedProject: String,
@@ -1112,13 +1113,6 @@ export default {
     };
   },
   computed: {
-    confirmBody() {
-      if (this.deleteIdx > -1) {
-        const {uuid} = this.tableData?.[this.deleteIdx];
-        return `删除后，${uuid}的所有信息将被清空，且无法恢复`;
-      }
-      return '';
-    },
     offsetTop() {
       return this.$store.state.setting.isUseTabsRouter ? 48 : 0;
     },
@@ -1130,7 +1124,7 @@ export default {
 
       // 检查第一个下拉菜单的选定值并更新其他字段
       if (newStatus === '1') {
-        this.formData.code = 400;
+        this.formData.code = "400";
       } else if (newStatus === '2' || newStatus === '3' || newStatus === '4' || newStatus === '5') {
         // 如果选择了"区操作"，显示第二个下拉菜单并更新其选项
         this.showSelect = true;
@@ -1138,9 +1132,9 @@ export default {
         this.showSelect2 = newStatus === '4';
         this.showSelect3 = newStatus === '5';
         if (newStatus === '3') {
-          this.formData.code = 100;
+          this.formData.code = "100";
         } else {
-          this.formData.code = 200;
+          this.formData.code = "200";
         }
       } else {
         this.showSelect = false;
@@ -1196,9 +1190,15 @@ export default {
         }
 
         const response = await axios.get(`http://localhost:8026/api/light_data/items${queryString}`);
+
         this.lightData = response.data;
         this.deviceData = response.data;
-
+        // 对数据进行排序（如果需要的话）
+        this.lightData.sort((a, b) => {
+          const clusterA = parseInt(a.cluster);
+          const clusterB = parseInt(b.cluster);
+          return clusterA - clusterB;
+        });
         this.lightData.forEach(item => {
           item.ConsumptionUpdate = this.formatTimestamp(item.ConsumptionUpdate);
         });
@@ -1544,6 +1544,11 @@ export default {
           console.log(`主题为：${topic},内容为：${message} 发布成功`)
         }
       })
+      this.client1.publish(topic, message, {qos: 0}, (err) => {
+        if (!err) {
+          console.log(`主题为：${topic},内容为：${message} 发布成功`)
+        }
+      })
     },
     /**
      * MQTT发送控灯指令
@@ -1560,7 +1565,7 @@ export default {
       };
 
       const jsonString = JSON.stringify(message);
-      this.publish("/ibms_shgh_zm/gs08291110/user/get", jsonString);
+      this.publish("led/led", jsonString);
     },
     /**
      * 从订阅主题消息中获取相应键值数据

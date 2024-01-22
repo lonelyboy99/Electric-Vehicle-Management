@@ -3,6 +3,10 @@
     <div class="table-tree-container">
       <div class="list-tree-wrapper">
         <div class="list-tree-operator">
+          <t-divider align="center">当前配置项目</t-divider>
+<!--          <div class="selected-project">{{ selectedProject }}</div>-->
+          <div class="selected-project">{{ selectedProject }}</div>
+          <t-divider align="center">项目筛选</t-divider>
           <t-form>
             <t-form-item>
               <t-select
@@ -24,8 +28,8 @@
         </div>
         <div class="list-tree-content">
           <common-table
-            :selectedProject="selectedProject"
             :selectedAddress="selectedAddress"
+            :selectedProject="selectedProject"
           />
         </div>
       </div>
@@ -58,6 +62,15 @@ export default {
       this.fetchData();
     }, 1000);
   },
+  watch:{
+    '$route.query.selectedProject': {
+      handler(newVal) {
+        // 当路由参数 selectedProject 发生变化时，直接赋值
+        this.selectedProject = newVal || '全部项目';
+      },
+      immediate: true, // 可选，如果希望在组件创建时立即执行一次
+    },
+  },
   methods: {
     // 灯具信息读取
     async fetchData() {
@@ -71,7 +84,7 @@ export default {
 
         // 项目名称数组
         this.PROJECT = [
-          { label: '全部项目', value: '全部项目' },
+          {label: '全部项目', value: '全部项目'},
           ...new Set(uniqueProjects.map(item => ({
             label: item.project,
             value: item.project,
@@ -85,7 +98,7 @@ export default {
 
         // 地区数组
         this.ADDRESS = [
-          { label: '全部地区', value: '全部地区' },
+          {label: '全部地区', value: '全部地区'},
           ...new Set(uniqueAddresses.map(item => ({
             label: item.address,
             value: item.address,
@@ -94,15 +107,6 @@ export default {
       } catch (error) {
         console.error('获取数据时出错', error);
       }
-    },
-    onInput() {
-      this.filterByText = (node) => {
-        const rs = node.label.indexOf(this.filterText) >= 0;
-        return rs;
-      };
-    },
-    rehandleClickOp({text, row}) {
-      console.log(text, row);
     },
   },
 };
@@ -133,5 +137,12 @@ export default {
 .list-tree-content {
   border-left: 1px solid var(--td-component-border);
   overflow: auto;
+}
+
+.selected-project {
+  display: flex;
+  font-size: 30px;
+  font-weight: bold;
+  justify-content: center;
 }
 </style>

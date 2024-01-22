@@ -1,116 +1,120 @@
 <template>
-  <div class="list-common-table">
-    <t-form>
+  <div>
+    <t-card :bordered="false" class="list-card-container">
+      <t-form>
         <t-row justify="space-between">
-          <t-space >
-            <t-col>
-              <t-form-item label="工单客户筛选" name="customer">
-                <t-select
-                  v-model="selectedCustomer"
-                  :options="CUSTOMER"
-                  class="form-item-content"
-                  @change="handleSelectChange"
-                />
-              </t-form-item>
-            </t-col>
-            <t-col>
-              <t-form-item label="工单状态筛选" name="state">
-                <t-select
-                  v-model="selectedState"
-                  :options="STATE"
-                  class="form-item-content"
-                  @change="handleSelectChange"
-                />
-              </t-form-item>
-            </t-col>
-            <t-col>
-              <t-form-item label="工单类型筛选" name="type">
-                <t-select
-                  v-model="selectedType"
-                  :options="TYPE"
-                  class="form-item-content"
-                  @change="handleSelectChange"
-                />
-              </t-form-item>
-            </t-col>
-            <t-col>
-              <t-button @click="handleBatchAccept" variant="base">批量承接</t-button>
-            </t-col>
-            <t-col>
-              <t-button @click="handleBatchComplete" variant="base">批量完成</t-button>
-            </t-col>
-            <t-col>
-              <t-button @click="handleBatchDelete" variant="base">批量删除</t-button>
-            </t-col>
-          </t-space>
+          <t-col :span="10">
+            <t-row :gutter="[16, 24]">
+              <t-col>
+                <t-form-item label="工单客户筛选" name="customer">
+                  <t-select
+                    v-model="selectedCustomer"
+                    :options="CUSTOMER"
+                    class="form-item-content"
+                    @change="handleSelectChange"
+                  />
+                </t-form-item>
+              </t-col>
+              <t-col>
+                <t-form-item label="工单状态筛选" name="state">
+                  <t-select
+                    v-model="selectedState"
+                    :options="STATE"
+                    class="form-item-content"
+                    @change="handleSelectChange"
+                  />
+                </t-form-item>
+              </t-col>
+              <t-col>
+                <t-form-item label="工单类型筛选" name="type">
+                  <t-select
+                    v-model="selectedType"
+                    :options="TYPE"
+                    class="form-item-content"
+                    @change="handleSelectChange"
+                  />
+                </t-form-item>
+              </t-col>
+              <t-col>
+                <t-button variant="base" @click="handleBatchAccept">批量承接</t-button>
+              </t-col>
+              <t-col>
+                <t-button variant="base" @click="handleBatchComplete">批量完成</t-button>
+              </t-col>
+              <t-col>
+                <t-button variant="base" @click="handleBatchDelete">批量删除</t-button>
+              </t-col>
+            </t-row>
+          </t-col>
         </t-row>
-    </t-form>
-    <div class="table-container">
-      <t-table
-        :columns="columns"
-        :data="data"
-        :headerAffixProps="{ offsetTop, container: getContainer }"
-        :headerAffixedTop="true"
-        :hover="hover"
-        :loading="dataLoading"
-        :pagination="pagination"
-        :rowKey="rowKey"
-        :verticalAlign="verticalAlign"
-        @change="rehandleChange"
-        @page-change="rehandlePageChange"
-        :selected-row-keys="selectedRowKeys"
-        @select-change="rehandleSelectChange"
-      >
-        <template #state="{ row }">
-          <t-tag v-if="row.state === '未承接'" theme="danger" variant="light">
-            <icon name="error-triangle" style="margin-bottom: 3px"/>
-            未承接
-          </t-tag>
-          <t-tag v-if="row.state === '已完成'" theme="success" variant="light">
-            <icon name="check-circle" style="margin-bottom: 3px"/>
-            已完成
-          </t-tag>
-          <t-tag v-if="row.state === '已承接但未完成'" theme="primary" variant="light">
-            <icon name="shield-error" style="margin-bottom: 3px"/>
-            已承接但未完成
-          </t-tag>
-        </template>
-        <template #priority="{ row }">
-          <t-tag v-if="row.priority === '紧急且重要'" theme="danger" variant="dark">紧急且重要</t-tag>
-          <t-tag v-if="row.priority === '高'" theme="warning" variant="dark">高</t-tag>
-          <t-tag v-if="row.priority === '中'" theme="primary" variant="dark">中</t-tag>
-          <t-tag v-if="row.priority === '低'" theme="success" variant="dark">低</t-tag>
-        </template>
-        <template #type="{ row }">
-          <t-tag v-if="row.type === '服务'" shape="round" theme="success" variant="outline">服务</t-tag>
-          <t-tag v-if="row.type === '维修'" shape="round" theme="danger" variant="outline">维修</t-tag>
-          <t-tag v-if="row.type === '安装'" shape="round" theme="primary" variant="outline">安装</t-tag>
-        </template>
-        <template #op="slotProps">
-          <t-popconfirm :on-confirm="() => handleUpdate(slotProps.row,'已承接但未完成')"
-                        :popupProps="{ placement: 'top' }"
-                        content="确认承接工单吗"
-                        theme="default"
-          >
-            <a class="t-button-link">承接</a>
-          </t-popconfirm>
-          <t-popconfirm :on-confirm="() => handleUpdate(slotProps.row,'已完成')"
-                        :popupProps="{ placement: 'top' }"
-                        content="确认工单完成吗"
-                        theme="default"
-          >
-            <a class="t-button-link">完成</a>
-          </t-popconfirm>
-          <t-popconfirm :on-confirm="() => handleDelete(slotProps.row)"
-                        :popupProps="{ placement: 'top' }"
-                        content="确认删除工单吗"
-                        theme="danger"
-          >
-            <a class="t-button-link" style="color: red">删除</a>
-          </t-popconfirm>
-        </template>
-      </t-table>
-    </div>
+      </t-form>
+      <div style="margin-top: 15px" class="table-container">
+        <t-table
+          :columns="columns"
+          :data="data"
+          :headerAffixProps="{ offsetTop, container: getContainer }"
+          :headerAffixedTop="true"
+          :hover="hover"
+          :loading="dataLoading"
+          :pagination="pagination"
+          :rowKey="rowKey"
+          :selected-row-keys="selectedRowKeys"
+          :verticalAlign="verticalAlign"
+          @change="rehandleChange"
+          @page-change="rehandlePageChange"
+          @select-change="rehandleSelectChange"
+        >
+          <template #state="{ row }">
+            <t-tag v-if="row.state === '未承接'" theme="danger" variant="light">
+              <icon name="error-circle" style="margin-bottom: 3px"/>
+              未承接
+            </t-tag>
+            <t-tag v-if="row.state === '已完成'" theme="success" variant="light">
+              <icon name="check-circle" style="margin-bottom: 3px"/>
+              已完成
+            </t-tag>
+            <t-tag v-if="row.state === '已承接但未完成'" theme="primary" variant="light">
+              <icon name="help-circle" style="margin-bottom: 3px"/>
+              已承接但未完成
+            </t-tag>
+          </template>
+          <template #priority="{ row }">
+            <t-tag v-if="row.priority === '紧急且重要'" theme="danger" variant="dark">紧急且重要</t-tag>
+            <t-tag v-if="row.priority === '高'" theme="warning" variant="dark">高</t-tag>
+            <t-tag v-if="row.priority === '中'" theme="primary" variant="dark">中</t-tag>
+            <t-tag v-if="row.priority === '低'" theme="success" variant="dark">低</t-tag>
+          </template>
+          <template #type="{ row }">
+            <t-tag v-if="row.type === '服务'" shape="round" theme="success" variant="outline">服务</t-tag>
+            <t-tag v-if="row.type === '维修'" shape="round" theme="danger" variant="outline">维修</t-tag>
+            <t-tag v-if="row.type === '安装'" shape="round" theme="primary" variant="outline">安装</t-tag>
+          </template>
+          <template #op="slotProps">
+            <t-popconfirm :on-confirm="() => handleUpdate(slotProps.row,'已承接但未完成')"
+                          :popupProps="{ placement: 'top' }"
+                          content="确认承接工单吗"
+                          theme="default"
+            >
+              <a class="t-button-link">承接</a>
+            </t-popconfirm>
+            <t-popconfirm :on-confirm="() => handleUpdate(slotProps.row,'已完成')"
+                          :popupProps="{ placement: 'top' }"
+                          content="确认工单完成吗"
+                          theme="default"
+            >
+              <a class="t-button-link">完成</a>
+            </t-popconfirm>
+            <t-popconfirm :on-confirm="() => handleDelete(slotProps.row)"
+                          :popupProps="{ placement: 'top' }"
+                          content="确认删除工单吗"
+                          theme="danger"
+            >
+              <a class="t-button-link" style="color: red">删除</a>
+            </t-popconfirm>
+          </template>
+        </t-table>
+      </div>
+    </t-card>
   </div>
 </template>
 <script>
@@ -124,7 +128,7 @@ export default {
   visible: true,
   components: {
     Trend,
-    Icon
+    Icon,
   },
   data() {
     return {
@@ -266,7 +270,7 @@ export default {
 
         // 客户名称数组
         this.CUSTOMER = [
-          { label: '全部客户', value: '全部客户' },
+          {label: '全部客户', value: '全部客户'},
           ...new Set(uniqueCustomers.map(item => ({
             label: item.customer,
             value: item.customer,
@@ -280,7 +284,7 @@ export default {
 
         // 订单状态数组
         this.STATE = [
-          { label: '全部状态', value: '全部状态' },
+          {label: '全部状态', value: '全部状态'},
           ...new Set(uniqueStates.map(item => ({
             label: item.state,
             value: item.state,
@@ -294,7 +298,7 @@ export default {
 
         // 订单类型数组
         this.TYPE = [
-          { label: '全部类型', value: '全部类型' },
+          {label: '全部类型', value: '全部类型'},
           ...new Set(uniqueTypes.map(item => ({
             label: item.type,
             value: item.type,
@@ -451,7 +455,7 @@ export default {
     rehandleClickOp({text, row}) {
       console.log(text, row);
     },
-    rehandleSelectChange(value, { selectedRowData }) {
+    rehandleSelectChange(value, {selectedRowData}) {
       this.selectedRowKeys = value;
       console.log(value, selectedRowData);
     },

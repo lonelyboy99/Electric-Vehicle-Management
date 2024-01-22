@@ -1,5 +1,5 @@
-import { getChartListColor } from '@/utils/color';
-import { getDateArray, getRandomArray } from '@/utils/charts';
+import { getChartListColor } from "@/utils/color"
+import { getDateArray, getRandomArray } from "@/utils/charts"
 
 /** 折线图数据 */
 // eslint-disable-next-line import/prefer-default-export
@@ -8,31 +8,31 @@ export function getFolderLineDataSet({
   placeholderColor,
   borderColor,
 }: { dateTime?: Array<string> } & Record<string, string>) {
-  let dateArray: Array<string> = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  let dateArray: Array<string> = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
   if (dateTime.length > 0) {
-    const divideNum = 7;
-    dateArray = getDateArray(dateTime, divideNum);
+    const divideNum = 7
+    dateArray = getDateArray(dateTime, divideNum)
   }
   return {
     color: getChartListColor(),
     grid: {
-      top: '5%',
-      right: '10px',
-      left: '30px',
-      bottom: '60px',
+      top: "5%",
+      right: "10px",
+      left: "30px",
+      bottom: "60px",
     },
     legend: {
-      left: 'center',
-      bottom: '0',
-      orient: 'horizontal', // legend 横向布局。
-      data: ['访问次数'],
+      left: "center",
+      bottom: "0",
+      orient: "horizontal", // legend 横向布局。
+      data: ["访问次数"],
       textStyle: {
         fontSize: 12,
         color: placeholderColor,
       },
     },
     xAxis: {
-      type: 'category',
+      type: "category",
       data: dateArray,
       boundaryGap: false,
       axisLabel: {
@@ -46,7 +46,7 @@ export function getFolderLineDataSet({
       },
     },
     yAxis: {
-      type: 'value',
+      type: "value",
       axisLabel: {
         color: placeholderColor,
       },
@@ -57,15 +57,15 @@ export function getFolderLineDataSet({
       },
     },
     tooltip: {
-      trigger: 'item',
+      trigger: "item",
     },
     series: [
       {
         showSymbol: true,
-        symbol: 'circle',
+        symbol: "circle",
         symbolSize: 8,
-        name: '访问次数',
-        stack: '总量',
+        name: "访问次数",
+        stack: "总量",
         data: [
           getRandomArray(),
           getRandomArray(),
@@ -75,7 +75,7 @@ export function getFolderLineDataSet({
           getRandomArray(),
           getRandomArray(),
         ],
-        type: 'line',
+        type: "line",
         itemStyle: {
           normal: {
             borderColor,
@@ -84,5 +84,5 @@ export function getFolderLineDataSet({
         },
       },
     ],
-  };
+  }
 }

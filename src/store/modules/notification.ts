@@ -11,30 +11,30 @@ export interface msgDataItem {
 const state: { msgData: Array<msgDataItem> } = {
   msgData: [
     {
-      id: '123',
-      content: '测试通知',
-      type: '测试',
+      id: "123",
+      content: "测试通知",
+      type: "测试",
       status: true,
       collected: false,
-      date: '2023-12-12 08:00',
-      quality: 'high',
+      date: "2023-12-12 08:00",
+      quality: "high",
     },
   ],
-};
+}
 
 const mutations = {
   setMsgData(state, data) {
     // eslint-disable-next-line no-param-reassign
-    state.msgData = data;
+    state.msgData = data
   },
-};
+}
 
 const getters = {
   unreadMsg: (state) => state.msgData.filter((item) => item.status),
   readMsg: (state) => state.msgData.filter((item) => !item.status),
-};
+}
 
-const actions = {};
+const actions = {}
 
 export default {
   namespaced: true,
@@ -42,4 +42,4 @@ export default {
   mutations,
   actions,
   getters,
-};
+}

@@ -69,6 +69,11 @@ export default Vue.extend({
           ellipsis: true,
           colKey: 'uuid',
           fixed: 'left',
+          attrs: {
+            style: {
+              fontWeight: 600,
+            },
+          },
         },
         {
           title: '区',
