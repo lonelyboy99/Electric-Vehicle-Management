@@ -50,7 +50,7 @@
     "@commitlint/config-conventional": "^17.1.0",
     "@types/uuid": "^9.0.7",
     "@types/vue-color": "^2.4.3",
-    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
     "@typescript-eslint/parser": "^6.19.0",
     "commitizen": "^4.2.3",
     "eslint-config-airbnb-base": "^14.2.1",
