@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^17.0.3",
-    "@commitlint/config-conventional": "^17.1.0",
+    "@commitlint/config-conventional": "^19.5.0",
     "@types/uuid": "^9.0.7",
     "@types/vue-color": "^2.4.3",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
